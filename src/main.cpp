@@ -6,15 +6,22 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <vector>
+#include <string.h>
+
+// File manipulation lib
+#include <fstream>
 
 // callback functions
 void print_error(int count, const char *desc);
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset);
-void Draw(glm::mat4 mvp, std::vector<glm::vec3> obj);
+
+void Read(const std::string obj_model_filepath);
+// void Send(void);
+// void Draw(glm::vec3 position, glm::vec3 orientation);
 
 // testing library funtions
-std::vector<glm::vec3> LoadCube();
+// std::vector<glm::vec3> LoadCube();
 
 // constants of the program
 const int WIDTH = 800;
@@ -46,10 +53,13 @@ int main()
 
     glfwMakeContextCurrent(window);
 
+    // // Read Model
+    Read("assets/Iron_Man.obj");
+
     glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 100.0f);
 
     glClearColor(0, 0, 0, 1);
-    std::vector<glm::vec3> cube = LoadCube();
+    glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
         glm::mat4 view = glm::lookAt(
@@ -62,41 +72,11 @@ int main()
 
         glm::mat4 MVP = projection * view * model;
 
-        Draw(MVP, cube);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     glfwDestroyWindow(window);
     return 0;
-}
-
-//TEsting version of Draw to test MVP matrix and loading simple models
-void Draw(glm::mat4 mvp, std::vector<glm::vec3> obj)
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    float *vertex_stream = static_cast<float *>(glm::value_ptr(obj.front()));
-
-    std::vector<glm::vec3> colors{
-        glm::vec3(1.0f, 0.0f, 0.0f), // Red
-        glm::vec3(1.0f, 1.0f, 0.0f), // Yellow
-        glm::vec3(0.0f, 1.0f, 0.0f), // Green
-        glm::vec3(0.0f, 1.0f, 1.0f), // Cyan
-        glm::vec3(0.0f, 0.0f, 1.0f), // Blue
-        glm::vec3(1.0f, 0.0f, 1.0f)  // Magenta
-    };
-
-    // Desenha quad em modo imediato
-    glBegin(GL_QUADS);
-    for (int nv = 0; nv < 6 * 4 * 3; nv += 3)
-    {
-        glColor3f(colors[nv / (4 * 3)].r, colors[nv / (4 * 3)].g, colors[nv / (4 * 3)].b);
-        glm::vec4 vertex = glm::vec4(vertex_stream[nv], vertex_stream[nv + 1], vertex_stream[nv + 2], 1.0f);
-        glm::vec4 transformed_vertex = mvp * vertex;
-        glm::vec4 normalized_vertex = transformed_vertex / transformed_vertex.w;
-        glVertex3f(normalized_vertex.x, normalized_vertex.y, normalized_vertex.z);
-    }
-    glEnd();
 }
 
 void print_error(int count, const char *desc)
@@ -111,47 +91,123 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    pitch = yoffset;
-    yaw = xoffset;
+    pitch = -yoffset / HEIGHT * 360;
+    yaw = -xoffset / WIDTH * 360;
 }
 
-std::vector<glm::vec3> LoadCube()
+std::vector<std::string> GetElementsOfLine(const std::string line, const char element)
 {
-    glm::vec3 point[24] = {
+    std::vector<std::string> elements = std::vector<std::string>(0);
+    std::string word;
+    for (int i = 0; i < line.length(); i++)
+    {
+        char l = line[i];
+        if (l == element) // || i == line.length() - 1)
+        {
+            elements.push_back(word);
+            word = "";
+        }
+        else
+        {
+            word += l;
+        }
+    }
+    if (strcmp(word.c_str(), "") != 0)
+    {
+        elements.push_back(word);
+        word = "";
+    }
+    return elements;
+}
 
-        glm::vec3(-1.0f, -1.0f, 1.0f),
-        glm::vec3(1.0f, -1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
+// Only read Obj files
+void Read(const std::string obj_model_filepath)
+{
+    std::vector<glm::vec3> vertices = std::vector<glm::vec3>(0);
+    std::vector<glm::vec2> texCoord = std::vector<glm::vec2>(0);
+    std::vector<glm::vec3> normalVertices = std::vector<glm::vec3>(0);
+    std::vector<std::vector<glm::vec3>> faces = std::vector<std::vector<glm::vec3>>(0);
 
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(-1.0f, 1.0f, -1.0f),
-        glm::vec3(1.0f, 1.0f, -1.0f),
-        glm::vec3(1.0f, -1.0f, -1.0f),
+    std::string line;
+    std::ifstream file(obj_model_filepath);
 
-        glm::vec3(1.0f, -1.0f, 1.0f),
-        glm::vec3(1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f, 1.0f, -1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-
-        glm::vec3(-1.0f, -1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f, -1.0f),
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, -1.0f),
-        glm::vec3(-1.0f, 1.0f, -1.0f),
-
-        glm::vec3(-1.0f, -1.0f, 1.0f),
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f, -1.0f, 1.0f)};
-
-    std::vector<glm::vec3> ret;
-    for (auto i : point)
-        ret.push_back(i);
-
-    return ret;
+    std::string objMTL;
+    bool readNormals = false;
+    bool readTextureCoord = false;
+    if (file.is_open())
+    {
+        while (getline(file, line))
+        {
+            float x, y, z;
+            std::vector<std::string> words = GetElementsOfLine(line, ' ');
+            if (strcmp(words[0].c_str(), "mtllib") == 0)
+            {
+                objMTL = words[1];
+            }
+            else if (strcmp(words[0].c_str(), "v") == 0)
+            {
+                // vertice
+                x = std::stof(words[1]);
+                y = std::stof(words[2]);
+                z = std::stof(words[3]);
+                glm::vec3 vert = glm::vec3(x, y, z);
+                vertices.push_back(vert);
+            }
+            else if (strcmp(words[0].c_str(), "vt") == 0)
+            {
+                // texture coordinate
+                readTextureCoord = true;
+                x = std::stof(words[1]);
+                y = std::stof(words[2]);
+                glm::vec2 coord = glm::vec2(x, y);
+                texCoord.push_back(coord);
+            }
+            else if (strcmp(words[0].c_str(), "vn") == 0)
+            {
+                // normal vector
+                readNormals = true;
+                x = std::stof(words[1]);
+                y = std::stof(words[2]);
+                z = std::stof(words[3]);
+                glm::vec3 normal = glm::vec3(x, y, z);
+                normalVertices.push_back(normal);
+            }
+            else if (strcmp(words[0].c_str(), "f") == 0)
+            {
+                int v[3] = {0};
+                int vt[3] = {-1};
+                int vn[3] = {-1};
+                std::vector<glm::vec3> newFaces = std::vector<glm::vec3>(0);
+                for (int i = 0; i < 3; i++)
+                {
+                    std::vector<std::string> faceData = GetElementsOfLine(words[i + 1], '/');
+                    v[i] = std::stoi(faceData[0]) - 1;
+                    if (readTextureCoord == true)
+                    {
+                        vt[i] = std::stoi(faceData[1]) - 1;
+                    }
+                    if (readNormals == true)
+                    {
+                        vn[i] = std::stoi(faceData[2]) - 1;
+                    }
+                    glm::vec3 face = glm::vec3(v[i], vt[i], vn[i]);
+                    newFaces.push_back(face);
+                }
+                faces.push_back(newFaces);
+            }
+        }
+        file.close();
+    }
+    else
+    {
+        std::
+                cout
+            << "Unable to open file" << std::endl;
+    }
+    std::cout << "Data: " << std::endl;
+    std::cout << "Vertices MTL: " << objMTL << std::endl;
+    std::cout << "Vertices: " << vertices.size() << std::endl;
+    std::cout << "Texture coordinates: " << texCoord.size() << std::endl;
+    std::cout << "Normal Vectors: " << normalVertices.size() << std::endl;
+    std::cout << "Mesh Faces: " << faces.size() << std::endl;
 }
