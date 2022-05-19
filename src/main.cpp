@@ -20,7 +20,7 @@ void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 std::vector<glm::vec3> Read(const std::string obj_model_filepath);
 // void Send(void);
-void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation);
+void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation, std::vector<glm::vec3> colors);
 
 // testing library funtions
 // std::vector<glm::vec3> LoadCube();
@@ -36,7 +36,7 @@ float pitch = 0;
 float yaw = 0;
 
 glm::mat4 MVP;
-glm::vec3 pos;
+glm::vec3 pos = glm::vec3(0, -2.5f, 0);
 int main()
 {
     srand(time(0));
@@ -59,28 +59,46 @@ int main()
     glfwMakeContextCurrent(window);
 
     // // Read Model
-    std::vector<glm::vec3> modelData = Read("assets/Iron_Man.obj");
+    std::vector<glm::vec3> shrek = Read("assets/shrek_knight/Shrek_knight.obj");
+    std::vector<glm::vec3> facade = Read("assets/facade_crown/facade_crown.obj");
+    std::vector<glm::vec3> ironMan = Read("assets/iron_man/Iron_Man.obj");
 
-    glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 100.0f);
+    std::vector<glm::vec3> colorsShrek = std::vector<glm::vec3>(0);
+    std::vector<glm::vec3> colorsFacade = std::vector<glm::vec3>(0);
+    std::vector<glm::vec3> colorsIronMan = std::vector<glm::vec3>(0);
+
+    for (int c = 0; c < (shrek.size() / 3) * 3 * 3; c += 3)
+    {
+        colorsShrek.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    }
+    for (int c = 0; c < (facade.size() / 3) * 3 * 3; c += 3)
+    {
+        colorsFacade.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    }
+    for (int c = 0; c < (ironMan.size() / 3) * 3 * 3; c += 3)
+    {
+        colorsIronMan.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    }
+
+    glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
 
     glClearColor(0, 0, 0, 1);
     glEnable(GL_DEPTH_TEST);
-    glm::vec3 scale = glm::vec4(1.1f);
 
     while (!glfwWindowShouldClose(window))
     {
         glm::mat4 view = glm::lookAt(
-            glm::vec3(0, 0, zoom),
-            glm::vec3(0, 0, 1),
+            glm::vec3(0, 100, zoom),
+            glm::vec3(0, 100, 1),
             glm::vec3(0, 1, 0));
-        glm::mat4 model = glm::mat4(1);
-        model = glm::scale(model, scale);
-        model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
-        model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
-        model = glm::translate(model, pos);
+        glm::mat4 model = glm::mat4(1);  
+        // model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
+        // model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
 
+        model = glm::translate(model, glm::vec3(-2,0,0));
         MVP = projection * view * model;
-        Draw(modelData, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
+        Draw(shrek, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), colorsShrek);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -100,24 +118,24 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    // pitch = -yoffset / HEIGHT * 360;
-    // yaw = -xoffset / WIDTH * 360;
-    yaw = 180;//-xoffset / WIDTH * 360;
-    pos = glm::vec3(1 - 2 * (xoffset / WIDTH), 1 - 2 * (yoffset / HEIGHT), 0)*zoom;
-    std::cout << pos.x << " " << pos.y << std::endl;
+    pitch = -yoffset / HEIGHT * 360;
+    yaw = -xoffset / WIDTH * 360;
 }
 
 std::vector<std::string> GetElementsOfLine(const std::string line, const char element)
 {
-    std::vector<std::string> elements = std::vector<std::string>(0);
+    std::vector<std::string> elements; // = std::vector<std::string>(0);
     std::string word;
     for (int i = 0; i < line.length(); i++)
     {
         char l = line[i];
         if (l == element) // || i == line.length() - 1)
         {
-            elements.push_back(word);
-            word = "";
+            if (strcmp(word.c_str(), "") != 0)
+            {
+                elements.push_back(word);
+                word = "";
+            }
         }
         else
         {
@@ -132,16 +150,23 @@ std::vector<std::string> GetElementsOfLine(const std::string line, const char el
     return elements;
 }
 
-//test for debug Read function 
-void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation)
+// test for debug Read function
+void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation, std::vector<glm::vec3> colors)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     float *vertex_stream = static_cast<float *>(glm::value_ptr(model.front()));
     glBegin(GL_TRIANGLES);
+    // std::vector<glm::vec3> colors = std::vector<glm::vec3>(0);
+
+    // for (int c = 0; c < (model.size() / 3) * 3 * 3; c += 3)
+    // {
+    //     colors.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    // }
+
     for (int nv = 0; nv < (model.size() / 3) * 3 * 3; nv += 3)
     {
-        glColor3f(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f); // colors[nv / (4 * 3)].r, colors[nv / (4 * 3)].g, colors[nv / (4 * 3)].b);
+        glColor3f(colors[nv / 9].r, colors[nv / 9].g, colors[nv / 9].b);
         glm::vec4 vertex = glm::vec4(vertex_stream[nv], vertex_stream[nv + 1], vertex_stream[nv + 2], 1.0f);
         glm::vec4 transformed_vertex = MVP * vertex;
         glm::vec4 normalized_vertex = transformed_vertex / transformed_vertex.w;
@@ -172,6 +197,7 @@ void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientatio
 
     if (file.is_open())
     {
+        std::cout << "File Open: " << obj_model_filepath << std::endl;
         while (getline(file, line))
         {
             float x, y, z;
@@ -183,9 +209,9 @@ void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientatio
             else if (strcmp(words[0].c_str(), "v") == 0)
             {
                 // vertice
-                x = std::stof(words[1]);
-                y = std::stof(words[2]);
-                z = std::stof(words[3]);
+                x = std::stod(words[1]);
+                y = std::stod(words[2]);
+                z = std::stod(words[3]);
                 glm::vec3 vert = glm::vec3(x, y, z);
                 vertices.push_back(vert);
             }
@@ -193,8 +219,8 @@ void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientatio
             {
                 // texture coordinate
                 readTextureCoord = true;
-                x = std::stof(words[1]);
-                y = std::stof(words[2]);
+                x = std::stod(words[1]);
+                y = std::stod(words[2]);
                 glm::vec2 coord = glm::vec2(x, y);
                 texCoord.push_back(coord);
             }
@@ -202,9 +228,9 @@ void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientatio
             {
                 // normal vector
                 readNormals = true;
-                x = std::stof(words[1]);
-                y = std::stof(words[2]);
-                z = std::stof(words[3]);
+                x = std::stod(words[1]);
+                y = std::stod(words[2]);
+                z = std::stod(words[3]);
                 glm::vec3 normal = glm::vec3(x, y, z);
                 normalVertices.push_back(normal);
             }
@@ -242,21 +268,6 @@ void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientatio
                 vert.push_back(v);
             }
         }
-
-        // for (int i = 0; i < faces.size(); i++)
-        // {
-        //     for (int b = 0; b < faces[i].size(); b++)
-        //     {
-        //         std::vector<glm::vec3> tempData = std::vector<glm::vec3>(0);
-        //         glm::vec3 vertice = vertices[faces[i][b].x];
-        //         glm::vec3 textureCoord = glm::vec3(texCoord[faces[i][b].y], 0);
-        //         glm::vec3 normal = normalVertices[faces[i][b].z];
-        //         tempData.push_back(vertice);
-        //         tempData.push_back(textureCoord);
-        //         tempData.push_back(normal);
-        //         data.push_back(tempData);
-        //     }
-        // }
     }
     else
     {
