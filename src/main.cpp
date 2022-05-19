@@ -37,6 +37,9 @@ float yaw = 0;
 
 glm::mat4 MVP;
 glm::vec3 pos = glm::vec3(0, -2.5f, 0);
+
+double lastTime = glfwGetTime();
+int nbFrames = 0;
 int main()
 {
     srand(time(0));
@@ -87,15 +90,27 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+        //FPS counter
+            // Measure speed
+            double currentTime = glfwGetTime();
+            nbFrames++;
+            if (currentTime - lastTime >= 1.0)
+            { // If last prinf() was more than 1 sec ago
+                // printf and reset timer
+                printf("%f ms/frame\n", 1000.0 / double(nbFrames));
+                nbFrames = 0;
+                lastTime += 1.0;
+            }
+
         glm::mat4 view = glm::lookAt(
             glm::vec3(0, 100, zoom),
             glm::vec3(0, 100, 1),
             glm::vec3(0, 1, 0));
-        glm::mat4 model = glm::mat4(1);  
+        glm::mat4 model = glm::mat4(1);
         // model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
         // model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
 
-        model = glm::translate(model, glm::vec3(-2,0,0));
+        model = glm::translate(model, glm::vec3(-2, 0, 0));
         MVP = projection * view * model;
         Draw(shrek, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), colorsShrek);
 
