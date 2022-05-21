@@ -11,7 +11,7 @@ using namespace std;
 #define GLFW_USE_DWM_SWAP_INTERVAL
 #include <GLFW/glfw3.h>
 
-#include "src/LoadShaders.h"
+#include "header/LoadShaders.h"
 
 void print_gl_info();
 void print_error(int error, const char *description);

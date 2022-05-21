@@ -1,12 +1,16 @@
 #version 440 core
 
-layout( location = 0 ) in vec2 vPosition;
-layout( location = 1 ) in vec3 vColors;
+layout( location = 0 ) in vec3 vertexPosition;
+layout( location = 1 ) in vec3 vertexColor;
+layout( location = 2 ) in vec2 vertexTextureCoordinate;
 
-out vec3 color;
+
+out vec3 influenceColor;
+out vec2 textureCoordinate;
 
 void main()
 {
-    gl_Position = vec4(vPosition, 1.0f, 1.0f);
-	color = vColors;
+    gl_Position = vec4(vertexPosition, 1.0f);
+	influenceColor = vertexColor;
+    textureCoordinate = vertexTextureCoordinate;
 }

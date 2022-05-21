@@ -9,21 +9,20 @@
 #include <string.h>
 
 #include <time.h>
-
 // File manipulation lib
 #include <fstream>
+
+#include "../header/RenderEngine.h"
+using namespace Graphics;
 
 // callback functions
 void print_error(int count, const char *desc);
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset);
+// void countFPS(void);
 
-std::vector<glm::vec3> Read(const std::string obj_model_filepath);
-// void Send(void);
-void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation, std::vector<glm::vec3> colors);
-
-// testing library funtions
-// std::vector<glm::vec3> LoadCube();
+// std::vector<glm::vec3> Read(const std::string obj_model_filepath);
+// void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation, std::vector<glm::vec3> colors);
 
 // constants of the program
 const int WIDTH = 800;
@@ -38,8 +37,10 @@ float yaw = 0;
 glm::mat4 MVP;
 glm::vec3 pos = glm::vec3(0, -2.5f, 0);
 
-double lastTime = glfwGetTime();
+double startTime = glfwGetTime();
 int nbFrames = 0;
+
+Camera camera = Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0), 60, 0.1f, 1000.0f, 16.0f / 9.0f);
 int main()
 {
     srand(time(0));
@@ -62,64 +63,69 @@ int main()
     glfwMakeContextCurrent(window);
 
     // // Read Model
-    std::vector<glm::vec3> shrek = Read("assets/shrek_knight/Shrek_knight.obj");
-    std::vector<glm::vec3> facade = Read("assets/facade_crown/facade_crown.obj");
-    std::vector<glm::vec3> ironMan = Read("assets/iron_man/Iron_Man.obj");
+    // std::vector<glm::vec3> shrek = Read("assets/shrek_knight/Shrek_knight.obj");
+    // std::vector<glm::vec3> facade = Read("assets/facade_crown/facade_crown.obj");
+    // std::vector<glm::vec3> ironMan = Read("assets/iron_man/Iron_Man.obj");
 
-    std::vector<glm::vec3> colorsShrek = std::vector<glm::vec3>(0);
-    std::vector<glm::vec3> colorsFacade = std::vector<glm::vec3>(0);
-    std::vector<glm::vec3> colorsIronMan = std::vector<glm::vec3>(0);
+    // std::vector<glm::vec3> colorsShrek = std::vector<glm::vec3>(0);
+    // std::vector<glm::vec3> colorsFacade = std::vector<glm::vec3>(0);
+    // std::vector<glm::vec3> colorsIronMan = std::vector<glm::vec3>(0);
 
-    for (int c = 0; c < (shrek.size() / 3) * 3 * 3; c += 3)
-    {
-        colorsShrek.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
-    }
-    for (int c = 0; c < (facade.size() / 3) * 3 * 3; c += 3)
-    {
-        colorsFacade.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
-    }
-    for (int c = 0; c < (ironMan.size() / 3) * 3 * 3; c += 3)
-    {
-        colorsIronMan.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
-    }
+    // for (int c = 0; c < (shrek.size() / 3) * 3 * 3; c += 3)
+    // {
+    //     colorsShrek.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    // }
+    // for (int c = 0; c < (facade.size() / 3) * 3 * 3; c += 3)
+    // {
+    //     colorsFacade.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    // }
+    // for (int c = 0; c < (ironMan.size() / 3) * 3 * 3; c += 3)
+    // {
+    //     colorsIronMan.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    // }
 
-    glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
+    // glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
 
     glClearColor(0, 0, 0, 1);
     glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window))
     {
-        //FPS counter
-            // Measure speed
-            double currentTime = glfwGetTime();
-            nbFrames++;
-            if (currentTime - lastTime >= 1.0)
-            { // If last prinf() was more than 1 sec ago
-                // printf and reset timer
-                printf("%f ms/frame\n", 1000.0 / double(nbFrames));
-                nbFrames = 0;
-                lastTime += 1.0;
-            }
+        // FPS counter
+        //  Measure speed
+        // countFPS();
 
-        glm::mat4 view = glm::lookAt(
-            glm::vec3(0, 100, zoom),
-            glm::vec3(0, 100, 1),
-            glm::vec3(0, 1, 0));
+        // glm::mat4 view = glm::lookAt(
+        //     glm::vec3(0, 100, zoom),
+        //     glm::vec3(0, 100, 1),
+        //     glm::vec3(0, 1, 0));
         glm::mat4 model = glm::mat4(1);
         // model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
         // model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
+        // model = glm::translate(model, glm::vec3(0, 0, 0));
 
-        model = glm::translate(model, glm::vec3(-2, 0, 0));
-        MVP = projection * view * model;
-        Draw(shrek, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), colorsShrek);
+        MVP = camera.getCameraMatrix() * model;
 
+        // Draw(shrek, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), colorsShrek);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     glfwDestroyWindow(window);
     return 0;
 }
+
+// void countFPS(void)
+// {
+//     double currentTime = glfwGetTime();
+//     nbFrames++;
+//     if (currentTime - startTime >= 1.0)
+//     { // If last prinf() was more than 1 sec ago
+//         // printf and reset timer
+//         printf("%f ms/frame\n", 1000.0 / double(nbFrames));
+//         nbFrames = 0;
+//         startTime += 1.0;
+//     }
+// }
 
 void print_error(int count, const char *desc)
 {

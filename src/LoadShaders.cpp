@@ -6,7 +6,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
-#include "LoadShaders.h"
+#include "../header/LoadShaders.h"
 
 static const GLchar* ReadShader(const char* filename) {
 	// Abre o ficheiro 'filename' em bin�rio, e coloca-se na �ltima posi��o do ficheiro.

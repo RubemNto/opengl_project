@@ -1,10 +1,13 @@
 #version 440 core
 
-flat in vec3 color;
+out vec4 FragColor;
 
-layout (location = 0) out vec4 fColor; // Cor final do fragmento
+in vec3 influenceColor;
+in vec2 textureCoordinate;
+
+uniform sampler2D textureImage;
 
 void main()
 {
-	fColor = vec4(color, 1.0f);
+	FragColor = texture(textureImage,textureCoordinate);
 }
