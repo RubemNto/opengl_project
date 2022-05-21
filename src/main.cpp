@@ -21,8 +21,8 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset);
 // void countFPS(void);
 
-// std::vector<glm::vec3> Read(const std::string obj_model_filepath);
-// void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation, std::vector<glm::vec3> colors);
+std::vector<glm::vec3> Read(const std::string obj_model_filepath);
+void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientation, std::vector<glm::vec3> colors);
 
 // constants of the program
 const int WIDTH = 800;
@@ -63,18 +63,18 @@ int main()
     glfwMakeContextCurrent(window);
 
     // // Read Model
-    // std::vector<glm::vec3> shrek = Read("assets/shrek_knight/Shrek_knight.obj");
+    std::vector<glm::vec3> shrek = Read("assets/shrek_knight/Shrek_knight.obj");
     // std::vector<glm::vec3> facade = Read("assets/facade_crown/facade_crown.obj");
     // std::vector<glm::vec3> ironMan = Read("assets/iron_man/Iron_Man.obj");
 
-    // std::vector<glm::vec3> colorsShrek = std::vector<glm::vec3>(0);
+    std::vector<glm::vec3> colorsShrek = std::vector<glm::vec3>(0);
     // std::vector<glm::vec3> colorsFacade = std::vector<glm::vec3>(0);
     // std::vector<glm::vec3> colorsIronMan = std::vector<glm::vec3>(0);
 
-    // for (int c = 0; c < (shrek.size() / 3) * 3 * 3; c += 3)
-    // {
-    //     colorsShrek.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
-    // }
+    for (int c = 0; c < (shrek.size() / 3) * 3 * 3; c += 3)
+    {
+        colorsShrek.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
+    }
     // for (int c = 0; c < (facade.size() / 3) * 3 * 3; c += 3)
     // {
     //     colorsFacade.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
@@ -84,7 +84,7 @@ int main()
     //     colorsIronMan.push_back(glm::vec3(rand() % 2 / 10.0f, rand() % 2 / 10.0f, rand() % 2 / 10.0f));
     // }
 
-    // glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
 
     glClearColor(0, 0, 0, 1);
     glEnable(GL_DEPTH_TEST);
@@ -95,18 +95,19 @@ int main()
         //  Measure speed
         // countFPS();
 
-        // glm::mat4 view = glm::lookAt(
-        //     glm::vec3(0, 100, zoom),
-        //     glm::vec3(0, 100, 1),
-        //     glm::vec3(0, 1, 0));
+        glm::mat4 view = glm::lookAt(
+            glm::vec3(0, 100, zoom),
+            glm::vec3(0, 100, 1),
+            glm::vec3(0, 1, 0));
         glm::mat4 model = glm::mat4(1);
-        // model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
-        // model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
+        model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
+        model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
         // model = glm::translate(model, glm::vec3(0, 0, 0));
 
-        MVP = camera.getCameraMatrix() * model;
+        // MVP = camera.getCameraMatrix() * model;
+        MVP = projection * view * model;
 
-        // Draw(shrek, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), colorsShrek);
+        Draw(shrek, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), colorsShrek);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -143,6 +144,9 @@ void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
     yaw = -xoffset / WIDTH * 360;
 }
 
+//Dont remove me
+//I'm important
+//Get all ements of line
 std::vector<std::string> GetElementsOfLine(const std::string line, const char element)
 {
     std::vector<std::string> elements; // = std::vector<std::string>(0);
@@ -204,7 +208,7 @@ void Draw(std::vector<glm::vec3> model, glm::vec3 position, glm::vec3 orientatio
     std::vector<glm::vec3> normalVertices = std::vector<glm::vec3>(0);
     std::vector<std::vector<glm::vec3>> faces = std::vector<std::vector<glm::vec3>>(0);
 
-    std::vector<std::vector<glm::vec3>> data = std::vector<std::vector<glm::vec3>>(0);
+    // std::vector<std::vector<glm::vec3>> data = std::vector<std::vector<glm::vec3>>(0);
 
     std::string line;
     std::ifstream file(obj_model_filepath);
