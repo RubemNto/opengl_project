@@ -5,12 +5,12 @@ using namespace Graphics;
 
 static std::vector<std::string> GetElementsOfLine(const std::string line, const char element)
 {
-    std::vector<std::string> elements; // = std::vector<std::string>(0);
+    std::vector<std::string> elements;
     std::string word;
     for (int i = 0; i < line.length(); i++)
     {
         char l = line[i];
-        if (l == element) // || i == line.length() - 1)
+        if (l == element)
         {
             if (strcmp(word.c_str(), "") != 0)
             {
@@ -124,7 +124,7 @@ void RenderEngine::Read(const std::string obj_model_filepath)
     }
     else
     {
-        throw std::runtime_error("Unable to open file!");
+        throw std::runtime_error("Unable to open OBj file!");
         // std::cout << "Unable to open file" << std::endl;
     }
     file.close();
@@ -132,9 +132,12 @@ void RenderEngine::Read(const std::string obj_model_filepath)
     objFilepathFolders.erase(objFilepathFolders.end());
     for (int i = 0; i < objFilepathFolders.size(); i++)
     {
-        homeDirectiory += objFilepathFolders[i];
+        homeDirectiory += objFilepathFolders[i] + "/";
     }
+    std::string home = homeDirectiory + '\0';
     homeDirectiory += objMTL;
+    // std::string mtlPath = homeDirectiory + objMTL;
+    homeDirectiory.at(homeDirectiory.length() - 1) = '\0';
 
     Engine::Model model = Engine::Model(obj_model_filepath);
 
@@ -142,9 +145,10 @@ void RenderEngine::Read(const std::string obj_model_filepath)
     if (mtlFile.is_open())
     {
         std::cout << "File Open: " << homeDirectiory << std::endl;
-        while (getline(file, line))
+        while (getline(mtlFile, line))
         {
             std::vector<std::string> words = GetElementsOfLine(line, ' ');
+
             if (strcmp(words[0].c_str(), "Ns") == 0)
             {
                 model.setSpecularExponent(std::stof(words[1]));
@@ -161,16 +165,17 @@ void RenderEngine::Read(const std::string obj_model_filepath)
             {
                 model.setSpecularLightReflectionCoefitient(glm::vec3(stof(words[1]), stof(words[2]), stof(words[3])));
             }
-            // else if (strcmp(words[0].c_str(), "map_Kd") == 0)
-            // {
-
-            // }
+            else if (strcmp(words[0].c_str(), "map_Kd") == 0)
+            {
+                model.maps.push_back(home + words[1]);
+            }
         }
     }
     else
     {
-        throw std::runtime_error("Unable to open file!");
+        throw std::runtime_error("Unable to open MTL file!");
     }
+    mtlFile.close();
     model.setVertices(vertices);
     model.setTextureCoordinates(texCoord);
     model.setVertexNormals(normalVertices);
@@ -179,11 +184,18 @@ void RenderEngine::Read(const std::string obj_model_filepath)
     importedModels.push_back(model);
 
     std::cout << "Data: " << std::endl;
-    std::cout << "Vertices MTL: " << objMTL << std::endl;
+    std::cout << "Model MTL: " << objMTL << std::endl;
     std::cout << "Vertices: " << model.getVertices().size() << std::endl;
     std::cout << "Texture coordinates: " << model.getTextureCoordinates().size() << std::endl;
     std::cout << "Normal Vectors: " << model.getVertexNormals().size() << std::endl;
     std::cout << "Mesh Faces: " << model.getFaces().size() << std::endl;
+    std::cout << "Textures: " << std::endl;
+    for (int i = 0; i < model.maps.size(); i++)
+    {
+        std::cout << "\t" << model.maps.at(i) << std::endl;
+    }
+
+    numberOfModels = importedModels.size();
 }
 
 void RenderEngine::print_gl_info()

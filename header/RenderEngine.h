@@ -11,7 +11,6 @@
 #include <vector>
 #include <fstream>
 
-
 #include "../header/Engine.h"
 #include "../header/LoadShaders.h"
 
@@ -29,6 +28,8 @@ namespace Graphics
         std::vector<Engine::Model> importedModels;
 
     public:
+        int numberOfModels;
+
         RenderEngine();
         ~RenderEngine();
 

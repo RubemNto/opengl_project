@@ -10,31 +10,6 @@
 
 namespace Engine
 {
-    // class VertexPositionNormalColor
-    // {
-    // private:
-    // public:
-    //     VertexPositionNormalColor(/* args */);
-    //     ~VertexPositionNormalColor();
-    // };
-
-    // class Texture2D
-    // {
-    // private:
-    //     /* data */
-    // public:
-    //     Texture2D(/* args */);
-    //     ~Texture2D();
-    // };
-
-    // class VertexPositionNormalTexture
-    // {
-    // private:
-    // public:
-    //     VertexPositionNormalTexture(/* args */);
-    //     ~VertexPositionNormalTexture();
-    // };
-
     class Model
     {
     private:
@@ -48,7 +23,10 @@ namespace Engine
         glm::vec3 specularLightReflectionCoefitient;
         float specularExponent;
 
+
     public:
+        std::vector<std::string> maps;
+        
         Model(const std::string modelPath);
         ~Model();
         std::vector<glm::vec3> getVertices();
@@ -65,6 +43,5 @@ namespace Engine
         void setDiffuseLightReflectionCoefitient(glm::vec3 data);
         void setSpecularLightReflectionCoefitient(glm::vec3 data);
         void setSpecularExponent(float data);
-
     };
 }

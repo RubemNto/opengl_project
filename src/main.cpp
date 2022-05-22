@@ -16,7 +16,10 @@
 #include <fstream>
 
 #include "../header/RenderEngine.h"
+// #include "../header/Engine.h"
+
 using namespace Graphics;
+using namespace Engine;
 
 // callback functions
 void print_error(int count, const char *desc);
@@ -34,10 +37,8 @@ float pitch = 0;
 float yaw = 0;
 
 glm::mat4 MVP;
-glm::vec3 pos = glm::vec3(0, -2.5f, 0);
 
-double startTime = glfwGetTime();
-int nbFrames = 0;
+RenderEngine renderEngine = RenderEngine();
 
 Camera camera = Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0), 60, 0.1f, 1000.0f, 16.0f / 9.0f);
 int main()
@@ -61,7 +62,8 @@ int main()
 
     glfwMakeContextCurrent(window);
 
-    glm::mat4 projection = glm::perspective(glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
+    renderEngine.Read("assets/iron_man/Iron_Man.obj");
+    // renderEngine.Read("assets/shrek_knight/Shrek_knight.obj");
 
     glClearColor(0, 0, 0, 1);
     glEnable(GL_DEPTH_TEST);
@@ -77,8 +79,7 @@ int main()
         model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
         model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
 
-        // MVP = camera.getCameraMatrix() * model;
-        MVP = projection * view * model;
+        MVP = camera.getCameraMatrix() * model;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -94,7 +95,6 @@ void print_error(int count, const char *desc)
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
     zoom -= yoffset;
-    std::cout << "Zoom: " << zoom << std::endl;
 }
 
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
