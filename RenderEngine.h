@@ -38,7 +38,7 @@ namespace Graphics
         */
         void Read(const std::string obj_model_filepath);
         /*
-        Send data from Read function to Graphics Card
+        Send data stored in the object to the Graphics Card
         */
         void Send(void);
         /*

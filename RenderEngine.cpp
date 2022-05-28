@@ -36,9 +36,9 @@ RenderEngine::RenderEngine()
 }
 
 RenderEngine::~RenderEngine() {}
-
 void RenderEngine::Send(void)
 {
+    
 }
 
 void RenderEngine::Read(const std::string obj_model_filepath)
@@ -96,9 +96,9 @@ void RenderEngine::Read(const std::string obj_model_filepath)
             }
             else if (strcmp(words[0].c_str(), "f") == 0)
             {
-                int v[3] = {0};
-                int vt[3] = {-1};
-                int vn[3] = {-1};
+                int v[3] = {0, 0, 0};
+                int vt[3] = {-1, -1, -1};
+                int vn[3] = {-1, -1, -1};
                 std::vector<GLuint> newFaces = std::vector<GLuint>(0);
                 for (int i = 0; i < 3; i++)
                 {
@@ -223,64 +223,6 @@ void RenderEngine::print_gl_info()
     {
         std::cout << glGetStringi(GL_SHADING_LANGUAGE_VERSION, n) << std::endl;
     }
-}
-
-void RenderEngine::init(void)
-{
-    // Fetch data from models loaded before call of function
-
-    // set count of array objects
-    numVertexArrayObjects = importedModels.size();
-    vertexArrayObjects = new GLuint(numVertexArrayObjects);
-    // set Vertex Array Objects in program
-    glGenVertexArrays(numVertexArrayObjects, vertexArrayObjects);
-    glBindVertexArray(vertexArrayObjects[0]);
-
-    numBuffers = 3; // vertex    /   texture coordinate  /   normal
-    buffers = new GLuint(numBuffers);
-    glGenBuffers(numBuffers, buffers);
-
-    for (int i = 0; i < numBuffers - 1; i++)
-    {
-        // Faz bind do VBO ao buffer GL_ARRAY_BUFFER.
-        // GL_ARRAY_BUFFER � utilizado para dados de atributos de v�rtices.
-        // Um VBO � criado no primeiro bind que lhe seja feito.
-        // Este VBO passa a estar ativo at� que seja feito o bind a outro VBO ou seja feito o bind com valor 0.
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-        if (i == 0)
-        {
-            // Inicializa o VBO (que est� ativo) com mem�ria de tamanho imut�vel.
-            // glBufferStorage(GL_ARRAY_BUFFER, sizeof(vertices) /*2 * 6 * sizeof(float)*/, vertices, 0);
-            // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        }
-        else if (i == 1)
-        {
-            // Inicializa o VBO (que est� ativo) com mem�ria de tamanho imut�vel.
-            // glBufferStorage(GL_ARRAY_BUFFER, sizeof(cores) /*3 * 6 * sizeof(float)*/, cores, 0);
-            // glBufferData(GL_ARRAY_BUFFER, sizeof(cores), vertices, GL_STATIC_DRAW);
-        }
-    }
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[numBuffers - 1]);
-    // glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, 0);
-
-    ShaderInfo shaders[] = {
-        {GL_VERTEX_SHADER, "triangles.vert"},
-        {GL_FRAGMENT_SHADER, "triangles.frag"},
-        {GL_NONE, NULL}};
-
-    GLuint programa = LoadShaders(shaders);
-    if (!programa)
-        exit(EXIT_FAILURE);
-    glUseProgram(programa);
-
-    GLint coordsId = glGetProgramResourceLocation(programa, GL_PROGRAM_INPUT, "vPosition"); // Para vers�es >= 4.3
-    GLint coresId = glGetProgramResourceLocation(programa, GL_PROGRAM_INPUT, "vColors");    // Para vers�es >= 4.3
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
-    glVertexAttribPointer(coresId, 3 /*3 elementos por v�rtice*/, GL_FLOAT /*do tipo float*/, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(coordsId);
-    glEnableVertexAttribArray(coresId);
 }
 
 void RenderEngine::print_error(int error, const char *description)

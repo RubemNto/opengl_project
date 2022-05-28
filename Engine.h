@@ -16,6 +16,7 @@ namespace Engine
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec2> textureCoordinates;
         std::vector<glm::vec3> vertexNormals;
+        /*List of vectors with the indexes (Vertex/Texture Coordinate/Vertex Normal) per vertex for each face*/
         std::vector<std::vector<GLuint>> faces;
 
         glm::vec3 ambientLightReflectionCoefitient;
