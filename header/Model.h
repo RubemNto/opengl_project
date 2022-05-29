@@ -17,10 +17,10 @@ namespace RenderEngine
         glm::vec3 Ka, Kd, Ks;
         unsigned char *imgData;
         int imgWidth, imgHeight, imgNumChannels;
-        std::vector<glm::vec3> vertices;
-        std::vector<glm::vec2> texCoord;
-        std::vector<glm::vec3> normalVertices;
-        std::vector<std::vector<unsigned int>> faces;
+        GLfloat *vertices;           // (vec3)
+        GLfloat *textureCoordinates; // (vec2)
+        GLfloat *vertexNormals;      // (vec3)
+        GLuint *faceElements;        // (vertices / texCoord / normalVertices)
 
         GLuint vertexArrayObject;
         GLuint vertexBufferObject[6]; // vertices(3 float), elements(1 int), UV's(2f), UV elements(1 int), normal vectors(3f), normal vectors elements(1 int)

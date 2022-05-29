@@ -6,7 +6,8 @@
 
 using namespace RenderEngine;
 
-static std::vector<std::string> GetElementsOfLine(const std::string line, const char element)
+// TODO: make function return matrix of array of char
+static std::vector<std::string> GetElementsOfLine(const std::string line, const char element) 
 {
     std::vector<std::string> elements;
     std::string word;
@@ -44,13 +45,16 @@ Model::~Model() {}
 
 void Model::Read(const std::string obj_model_filepath)
 {
+    std::vector<GLfloat> vtx;
+    std::vector<GLfloat> texCoord;
+    std::vector<GLfloat> normVtx;
+    std::vector<GLuint> fElements;
+
     std::string line;
     std::ifstream file(obj_model_filepath);
-    std::string homeDirectiory = "";
     std::string objMTL;
     bool readNormals = false;
     bool readTextureCoord = false;
-    // Load vertices/Normals/Texture Coordinates
     if (file.is_open())
     {
         std::cout << "File Open: " << obj_model_filepath << std::endl;
@@ -58,62 +62,57 @@ void Model::Read(const std::string obj_model_filepath)
         {
             float x, y, z;
             std::vector<std::string> words = GetElementsOfLine(line, ' ');
-            if (strcmp(words[0].c_str(), "mtllib") == 0)
+            if (strcmp(words[0].c_str(), "mtllib") == 0) // Get the mtl file name to be read in the future
             {
                 objMTL = words[1];
             }
-            else if (strcmp(words[0].c_str(), "v") == 0)
+            else if (strcmp(words[0].c_str(), "v") == 0) // Get vertex data
             {
-                // vertice
                 x = std::stod(words[1]);
                 y = std::stod(words[2]);
                 z = std::stod(words[3]);
-                glm::vec3 vert = glm::vec3(x, y, z);
-                vertices.push_back(vert);
+                vtx.push_back(x);
+                vtx.push_back(y);
+                vtx.push_back(z);
             }
-            else if (strcmp(words[0].c_str(), "vt") == 0)
+            else if (strcmp(words[0].c_str(), "vt") == 0) // Get Texture Coordinate
             {
-                // texture coordinate
                 readTextureCoord = true;
                 x = std::stod(words[1]);
                 y = std::stod(words[2]);
-                glm::vec2 coord = glm::vec2(x, y);
-                texCoord.push_back(coord);
+                texCoord.push_back(x);
+                texCoord.push_back(y);
             }
-            else if (strcmp(words[0].c_str(), "vn") == 0)
+            else if (strcmp(words[0].c_str(), "vn") == 0) // Get Vertex Normal
             {
                 // normal vector
                 readNormals = true;
                 x = std::stod(words[1]);
                 y = std::stod(words[2]);
                 z = std::stod(words[3]);
-                glm::vec3 normal = glm::vec3(x, y, z);
-                normalVertices.push_back(normal);
+                normVtx.push_back(x);
+                normVtx.push_back(y);
+                normVtx.push_back(z);
             }
-            else if (strcmp(words[0].c_str(), "f") == 0)
+            else if (strcmp(words[0].c_str(), "f") == 0) // Get faces elements
             {
-                int v[3] = {0, 0, 0};
-                int vt[3] = {-1, -1, -1};
-                int vn[3] = {-1, -1, -1};
-                std::vector<unsigned int> newFaces = std::vector<unsigned int>(0);
                 for (int i = 0; i < 3; i++)
                 {
                     std::vector<std::string> faceData = GetElementsOfLine(words[i + 1], '/');
-                    v[i] = std::stoi(faceData[0]) - 1;
-                    if (readTextureCoord == true)
+                    unsigned int v = -1, vt = -1, vn = -1;
+                    v = std::stoi(faceData[0]) - 1;
+                    if (readTextureCoord == true) // check for the existence of texture coordinate
                     {
-                        vt[i] = std::stoi(faceData[1]) - 1;
+                        vt = std::stoi(faceData[1]) - 1;
                     }
-                    if (readNormals == true)
+                    if (readNormals == true) // check for the existence of vertex normal
                     {
-                        vn[i] = std::stoi(faceData[2]) - 1;
+                        vn = std::stoi(faceData[2]) - 1;
                     }
-                    glm::vec3 face = glm::vec3(v[i], vt[i], vn[i]);
-                    newFaces.push_back(face.x);
-                    newFaces.push_back(face.y);
-                    newFaces.push_back(face.z);
+                    fElements.push_back(v);
+                    fElements.push_back(vt);
+                    fElements.push_back(vn);
                 }
-                faces.push_back(newFaces);
             }
         }
         file.close();
@@ -123,13 +122,17 @@ void Model::Read(const std::string obj_model_filepath)
         throw std::runtime_error("Unable to open OBj file!");
     }
     file.close();
+    // Get Home Directory Folders
+    std::string homeDirectiory = "";
     std::vector<std::string> objFilepathFolders = GetElementsOfLine(obj_model_filepath, '/');
     objFilepathFolders.erase(objFilepathFolders.end());
     for (int i = 0; i < objFilepathFolders.size(); i++)
     {
         homeDirectiory += objFilepathFolders[i] + "/";
     }
+    // Set home directory of the file
     std::string home = homeDirectiory;
+    // Get objMTL file
     homeDirectiory += objMTL;
     homeDirectiory.at(homeDirectiory.length() - 1) = '\0';
 
@@ -141,23 +144,23 @@ void Model::Read(const std::string obj_model_filepath)
         {
             std::vector<std::string> words = GetElementsOfLine(line, ' ');
 
-            if (strcmp(words[0].c_str(), "Ns") == 0)
+            if (strcmp(words[0].c_str(), "Ns") == 0)// Get Specular value
             {
                 Ns = std::stof(words[1]);
             }
-            else if (strcmp(words[0].c_str(), "Ka") == 0)
+            else if (strcmp(words[0].c_str(), "Ka") == 0)// Get Ambient Color
             {
                 Ka = glm::vec3(stof(words[1]), stof(words[2]), stof(words[3]));
             }
-            else if (strcmp(words[0].c_str(), "Kd") == 0)
+            else if (strcmp(words[0].c_str(), "Kd") == 0)// Get Diffuse Color
             {
                 Kd = glm::vec3(stof(words[1]), stof(words[2]), stof(words[3]));
             }
-            else if (strcmp(words[0].c_str(), "Ks") == 0)
+            else if (strcmp(words[0].c_str(), "Ks") == 0)// Get Specular Color
             {
                 Ks = glm::vec3(stof(words[1]), stof(words[2]), stof(words[3]));
             }
-            else if (strcmp(words[0].c_str(), "map_Kd") == 0)
+            else if (strcmp(words[0].c_str(), "map_Kd") == 0)// Get Texture Map
             {
                 std::string imgPath = home + words[1];
                 imgPath.pop_back();
@@ -172,36 +175,48 @@ void Model::Read(const std::string obj_model_filepath)
     }
     mtlFile.close();
 
-    std::cout << "Data: " << std::endl;
-    std::cout << "Model MTL: " << objMTL << std::endl;
-    std::cout << "Vertices: " << vertices.size() << std::endl;
-    std::cout << "Texture coordinates: " << texCoord.size() << std::endl;
-    std::cout << "Normal Vectors: " << normalVertices.size() << std::endl;
-    std::cout << "Model Faces: " << faces.size() << std::endl;
+    vertices = new GLfloat[vtx.size()];
+    std::copy(vtx.begin(), vtx.end(), vertices);
+    textureCoordinates = new GLfloat[texCoord.size()];
+    std::copy(texCoord.begin(), texCoord.end(), textureCoordinates);
+    vertexNormals = new GLfloat[normVtx.size()];
+    std::copy(normVtx.begin(), normVtx.end(), vertexNormals);
+    faceElements = new GLuint[fElements.size()];
+    std::copy(fElements.begin(), fElements.end(), faceElements);
+
+    std::cout << "Model Data " << std::endl;
+    std::cout << "\tModel MTL: " << objMTL << std::endl;
+    std::cout << "\tVertices: " << (vtx.size()) / 3 << std::endl;
+    std::cout << "\tTexture coordinates: " << (texCoord.size()) / 2 << std::endl;
+    std::cout << "\tNormal Vectors: " << (normVtx.size()) / 3 << std::endl;
+    std::cout << "\tModel Faces: " << (fElements.size()) / 9 << std::endl;
 }
 
 void Model::Send(void)
 {
-    // generate vertex array object
-    glGenVertexArrays(1, &vertexArrayObject);
-    // bind the vertex array object of the model
-    glBindVertexArray(vertexArrayObject);
-    // generate Vertex buffer object
-    glGenBuffers(2, vertexBufferObject);
-    std::cout<<"Create Vertex array object"<<std::endl;
-    
-    //activate current buffer object
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0]);
-    //Fetch vertices stored in the class and make an array from it
-    glm::vec3 modelVertices[vertices.size() * 3];
-    std::copy(vertices.begin(), vertices.end(), modelVertices);
-    //bind data to the current active buffer object
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * 3 * sizeof(float), modelVertices, GL_STATIC_DRAW);
-    //makes sure buffer has 3 float numbers per vertex
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,0);
-    //Start counting the vertices at the beginning of the array
-    glEnableVertexAttribArray(0);
-    std::cout<<"Create Vertex buffer object"<<std::endl;
+    // // generate vertex array object
+    // glGenVertexArrays(1, &vertexArrayObject);
+    // // bind the vertex array object of the model
+    // glBindVertexArray(vertexArrayObject);
+    // // generate Vertex buffer object
+    // glGenBuffers(2, vertexBufferObject);
+    // std::cout << "Create Vertex array object" << std::endl;
+
+    // // activate current buffer object
+    // glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[0]);
+    // // Fetch vertices stored in the class and make an array from it
+    // glm::vec3 modelVertices[vertices.size() * 3];
+    // std::copy(vertices.begin(), vertices.end(), modelVertices);
+    // // bind data to the current active buffer object
+    // glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), modelVertices, GL_STATIC_DRAW);
+    // // makes sure buffer has 3 float numbers per vertex
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    // // Start counting the vertices at the beginning of the array
+    // glEnableVertexAttribArray(0);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject[1]);
+    // GLuint vertexElements[facesElements.size()];
+    // std::copy(vertices.begin(), vertices.end(), modelVertices);
 }
 
 void Model::Draw(glm::vec3 position, glm::vec3 orientation)
