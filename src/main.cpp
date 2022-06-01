@@ -39,6 +39,8 @@ int main()
 	const Camera camera = Camera(glm::vec3(0.0f, 2.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f), glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
 	Model model = Model("assets/iron_man/Iron_Man.obj");
 	float rotation = 0;
+	bool lightEnabled = true;
+	model.SetLightActive(lightEnabled);
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -48,7 +50,7 @@ int main()
 		model.Draw(camera, glm::vec3(2.0f, -1.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		rotation += 0.1f;
+		rotation += 1.0f;
 	}
 
 	glfwTerminate();

@@ -39,6 +39,8 @@ namespace RenderEngine
         GLuint vertexArrayObject;
         GLuint vertexBufferObjects[3];
         GLuint shaderProgram;
+
+        GLint lightEnabled;
         std::map<std::string, Material> materials;
         /*Read data from OBJ file*/
         void ReadModel(const std::string file_name);
@@ -54,6 +56,7 @@ namespace RenderEngine
         Model(const std::string obj_model_filepath);
         ~Model();
         void PrintModelData();
+        void SetLightActive(bool value);
         void Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float scale);
     };
 }

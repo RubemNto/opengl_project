@@ -6,6 +6,7 @@ using namespace RenderEngine;
 
 Model::Model(const std::string obj_model_filepath)
 {
+    lightEnabled = false;
     ReadModel(obj_model_filepath);
     SendModelData();
 }
@@ -20,22 +21,31 @@ void Model::PrintModelData()
     std::cout << "\tNormals: " << normals.size() << std::endl;
 }
 
+void Model::SetLightActive(bool value)
+{
+    lightEnabled = value;
+}
+
 void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float scale)
 {
     glm::mat4 Model = glm::mat4(1);
-    Model = glm::scale(Model, glm::vec3(scale));
+    Model = glm::translate(Model, position);
 
     Model = glm::rotate(Model, glm::radians(orientation.x), glm::vec3(1, 0, 0));
     Model = glm::rotate(Model, glm::radians(orientation.y), glm::vec3(0, 1, 0));
     Model = glm::rotate(Model, glm::radians(orientation.z), glm::vec3(0, 0, 1));
 
-    Model = glm::translate(Model, position);
+    Model = glm::scale(Model, glm::vec3(scale));
 
     glm::mat4 MVPMatrix = camera.GetViewProjectionMatrix() * Model;
 
     glBindVertexArray(vertexArrayObject);
     GLint mvp = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "MVP");
     glProgramUniformMatrix4fv(shaderProgram, mvp, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
+
+    GLint lightEnabled = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "lightEnabled");
+    glProgramUniform1i(shaderProgram, lightEnabled, this->lightEnabled);
+
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() * 3);
 }
 
@@ -99,6 +109,11 @@ void Model::SendModelData(void)
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjects[1]);
     glVertexAttribPointer(vertexTexturePosition, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vertexTexturePosition);
+
+    GLint vertexNormal = glGetProgramResourceLocation(shaderProgram, GL_PROGRAM_INPUT, "vertexNormal");
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjects[2]);
+    glVertexAttribPointer(vertexNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(vertexNormal);
 
     GLint locationTexSampler = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "TexSampler");
     glProgramUniform1i(shaderProgram, locationTexSampler, 0);
