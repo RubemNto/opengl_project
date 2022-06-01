@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #define GLFW_USE_DWM_SWAP_INTERVAL
 #include <GLFW/glfw3.h>
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <iostream>
 using namespace std;
 
@@ -13,7 +15,6 @@ using namespace std;
 #include <vector>
 #include <fstream>
 
-#include "../header/LoadShaders.h"
 #include "../header/Camera.h"
 
 namespace RenderEngine
@@ -45,6 +46,7 @@ namespace RenderEngine
         void ReadMaterial(const std::string file_name);
         /*Send data read from OBJ file to Graphics Card*/
         void SendModelData(void);
+        void LoadTexture(const std::string file_name);
 
         std::vector<std::string> GetElementsOfLine(const std::string line, const char element);
 

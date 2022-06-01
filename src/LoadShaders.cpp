@@ -1,5 +1,3 @@
-// #pragma once
-
 #include <iostream>
 #include <fstream>
 
@@ -26,7 +24,7 @@ static const GLchar *ReadShader(const char *filename)
 	}
 	else
 	{
-		std::cerr << "Erro ao abrir o ficheiro '" << filename << "'" << std::endl;
+		std::cerr << "failed to open file '" << filename << "'" << std::endl;
 	}
 
 	return nullptr;
@@ -36,7 +34,7 @@ GLuint LoadShaders(ShaderInfo *shaders)
 {
 	if (shaders == nullptr)
 		return 0;
-		
+
 	GLuint program = glCreateProgram();
 
 	for (GLint i = 0; shaders[i].type != GL_NONE; i++)

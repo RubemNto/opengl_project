@@ -1,17 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <string.h>
+#include <time.h>
 
-// #include "../header/House.h"
 #include "../header/Model.h"
 using namespace RenderEngine;
-
-#include <time.h>
-// File manipulation lib
-// #include <fstream>
-
-// #include "../header/Model.h"
-// using namespace RenderEngine;
 
 // callback functions
 void print_error(int count, const char *desc);
@@ -43,7 +36,7 @@ int main()
 
 	glewExperimental = GL_TRUE;
 	glewInit();
-	const Camera camera = Camera(glm::vec3(0.0f, 2.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f),glm::vec3(0.0f, 2.0f, 0.0f), glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
+	const Camera camera = Camera(glm::vec3(0.0f, 2.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f), glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
 	Model model = Model("assets/iron_man/Iron_Man.obj");
 	float rotation = 0;
 	while (!glfwWindowShouldClose(window))
