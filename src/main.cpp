@@ -2,12 +2,16 @@
 #include <vector>
 #include <string.h>
 
+// #include "../header/House.h"
+#include "../header/Model.h"
+using namespace RenderEngine;
+
 #include <time.h>
 // File manipulation lib
 // #include <fstream>
 
-#include "../header/Model.h"
-using namespace RenderEngine;
+// #include "../header/Model.h"
+// using namespace RenderEngine;
 
 // callback functions
 void print_error(int count, const char *desc);
@@ -15,73 +19,60 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset);
 
 // constants of the program
-const int WIDTH = 800;
-const int HEIGHT = 600;
+const int WIDTH = 1280;
+const int HEIGHT = 720;
 const float ASPECT_RATIO = WIDTH / (float)HEIGHT;
-
-// values for testing models
-float zoom = -10.0f;
-float pitch = 0;
-float yaw = 0;
 
 int main()
 {
-    srand(time(0));
-    GLFWwindow *window = nullptr;
-    glfwSetErrorCallback(print_error);
+	GLFWwindow *window;
 
-    if (!glfwInit())
-        return 1;
+	glfwSetErrorCallback(print_error);
 
-    window = glfwCreateWindow(WIDTH, HEIGHT, "My First P3D Project", NULL, NULL);
-    glfwSetScrollCallback(window, scrollCallback);
-    glfwSetCursorPosCallback(window, cursorPositionCallback);
+	if (!glfwInit())
+		return -1;
 
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
-    }
+	window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL - Iron Man", NULL, NULL);
+	if (window == NULL)
+	{
+		glfwTerminate();
+		return -1;
+	}
 
-    glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
 
-    glewExperimental = GL_TRUE;
-    glewInit();
-    Model model = Model("assets/iron_man/Iron_Man.obj");
+	glewExperimental = GL_TRUE;
+	glewInit();
+	const Camera camera = Camera(glm::vec3(0.0f, 2.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f),glm::vec3(0.0f, 2.0f, 0.0f), glm::radians(60.0f), ASPECT_RATIO, 0.1f, 1000.0f);
+	Model model = Model("assets/iron_man/Iron_Man.obj");
+	float rotation = 0;
+	while (!glfwWindowShouldClose(window))
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		model.Draw(camera, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
+		model.Draw(camera, glm::vec3(-2.0f, -1.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
+		model.Draw(camera, glm::vec3(2.0f, -1.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+		rotation += 0.1f;
+	}
 
-    glClearColor(0, 0, 0, 1);
-    glEnable(GL_DEPTH_TEST);
-
-    while (!glfwWindowShouldClose(window))
-    {
-        glm::mat4 view = glm::lookAt(
-            glm::vec3(0, 100, zoom),
-            glm::vec3(0, 100, 1),
-            glm::vec3(0, 1, 0));
-        glm::mat4 model = glm::mat4(1);
-        model = glm::rotate(model, glm::radians(pitch), glm::vec3(1, 0, 0));
-        model = glm::rotate(model, glm::radians(yaw), glm::vec3(0, 1, 0));
-
-        // MVP = camera.getCameraMatrix() * model;
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-    glfwDestroyWindow(window);
-    return 0;
+	glfwTerminate();
+	return 0;
 }
 
 void print_error(int count, const char *desc)
 {
-    std::cout << desc << std::endl;
+	std::cout << desc << std::endl;
 }
 void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    // zoom -= yoffset;
+	// zoom -= yoffset;
 }
 
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    // pitch = -yoffset / HEIGHT * 360;
-    // yaw = -xoffset / WIDTH * 360;
+	// pitch = -yoffset / HEIGHT * 360;
+	// yaw = -xoffset / WIDTH * 360;
 }
