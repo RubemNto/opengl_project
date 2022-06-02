@@ -72,7 +72,7 @@ void Model::SendModelData(void)
     glGenVertexArrays(1, &vertexArrayObject);
     glBindVertexArray(vertexArrayObject);
     glGenBuffers(3, vertexBufferObjects);
-    for (int i = 0; i < 3 - 1; i++)
+    for (int i = 0; i < 3; i++)
     {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjects[i]);
         if (i == 0)
@@ -97,6 +97,7 @@ void Model::SendModelData(void)
     if (!shaderProgram)
         exit(EXIT_FAILURE);
     glUseProgram(shaderProgram);
+    std::cout<<"shader finished"<<std::endl;
 
     GLint vertexPosition = glGetProgramResourceLocation(shaderProgram, GL_PROGRAM_INPUT, "vertexPosition");
 
@@ -118,9 +119,18 @@ void Model::SendModelData(void)
     GLint locationTexSampler = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "TexSampler");
     glProgramUniform1i(shaderProgram, locationTexSampler, 0);
 
+    GLint Ns = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Ns");
+    glProgramUniform1f(shaderProgram, Ns, materials.at("Iron_Man").Ns);
+    GLint Ka = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Ka");
+    glProgramUniform3f(shaderProgram, Ka, materials.at("Iron_Man").Ka.x, materials.at("Iron_Man").Ka.y, materials.at("Iron_Man").Ka.z);
+    GLint Kd = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Kd");
+    glProgramUniform3f(shaderProgram, Kd, materials.at("Iron_Man").Kd.x, materials.at("Iron_Man").Kd.y, materials.at("Iron_Man").Kd.z);
+    GLint Ks = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Ks");
+    glProgramUniform3f(shaderProgram, Ks, materials.at("Iron_Man").Ks.x, materials.at("Iron_Man").Ks.y, materials.at("Iron_Man").Ks.z);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glEnable(GL_FRONT_AND_BACK);
+    glEnable(GL_FRONT);
 }
 
 void Model::LoadTexture(const std::string file_name)
@@ -233,6 +243,7 @@ void Model::ReadMaterial(const std::string file_name)
             std::vector<string> elements = GetElementsOfLine(line, ' ');
             if (strcmp(elements.at(0).c_str(), "newmtl") == 0)
             {
+                elements.at(1).pop_back();
                 MaterialName = elements.at(1);
                 materials.insert({MaterialName, Material()});
             }
