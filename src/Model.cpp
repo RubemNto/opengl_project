@@ -4,6 +4,7 @@
 
 using namespace RenderEngine;
 
+Model::Model(){}
 Model::Model(const std::string obj_model_filepath)
 {
     lightEnabled = false;
@@ -97,7 +98,6 @@ void Model::SendModelData(void)
     if (!shaderProgram)
         exit(EXIT_FAILURE);
     glUseProgram(shaderProgram);
-    std::cout<<"shader finished"<<std::endl;
 
     GLint vertexPosition = glGetProgramResourceLocation(shaderProgram, GL_PROGRAM_INPUT, "vertexPosition");
 
@@ -298,4 +298,26 @@ std::vector<std::string> Model::GetElementsOfLine(const std::string line, const 
     if (word.size() != 0)
         elements.push_back(word);
     return elements;
+}
+
+void Model::AddLight(Lights::Light* light)
+{
+    this->lights.push_back(light);
+    this->numLights = this->lights.size();
+}
+void Model::RemoveLight(int index)
+{
+    if (index < this->lights.size())
+    {
+        this->lights.erase(this->lights.begin() + index);
+    }
+    else
+    {
+        std::cout << "Index outside of range" << std::endl;
+    }
+}
+
+Light* Model::GetLight(int index)
+{
+    return lights.at(index);
 }

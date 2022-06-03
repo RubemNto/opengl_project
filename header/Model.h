@@ -16,6 +16,8 @@ using namespace std;
 #include <fstream>
 
 #include "../header/Camera.h"
+#include "../header/Light.h"
+using namespace Lights;
 
 namespace RenderEngine
 {
@@ -35,6 +37,7 @@ namespace RenderEngine
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> textureCoordinates;
+        std::vector<Light*> lights;
 
         GLuint vertexArrayObject;
         GLuint vertexBufferObjects[3];
@@ -53,10 +56,15 @@ namespace RenderEngine
         std::vector<std::string> GetElementsOfLine(const std::string line, const char element);
 
     public:
+        int numLights;
         Model(const std::string obj_model_filepath);
+        Model();
         ~Model();
         void PrintModelData();
         void SetLightActive(bool value);
+        void AddLight(Lights::Light* light);
+        void RemoveLight(int index);
+        Light* GetLight(int index);
         void Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float scale);
     };
 }
