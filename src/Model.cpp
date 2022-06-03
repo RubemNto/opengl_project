@@ -4,7 +4,7 @@
 
 using namespace RenderEngine;
 
-Model::Model(){}
+Model::Model() {}
 Model::Model(const std::string obj_model_filepath)
 {
     lightEnabled = false;
@@ -41,11 +41,65 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
     glm::mat4 MVPMatrix = camera.GetViewProjectionMatrix() * Model;
 
     glBindVertexArray(vertexArrayObject);
+
+    GLint modelView = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "ModelView");
+    glProgramUniformMatrix4fv(shaderProgram, modelView, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix() * Model));
+
+    GLint normalView = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "NormalMatrix");
+    glProgramUniformMatrix3fv(shaderProgram, normalView, 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(glm::mat3(camera.GetViewMatrix() * Model))));
+
     GLint mvp = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "MVP");
     glProgramUniformMatrix4fv(shaderProgram, mvp, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
 
-    GLint lightEnabled = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "lightEnabled");
-    glProgramUniform1i(shaderProgram, lightEnabled, this->lightEnabled);
+    GLint modelMatrix = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Model");
+    glProgramUniformMatrix4fv(shaderProgram, modelMatrix, 1, GL_FALSE, glm::value_ptr(Model));
+
+    GLint viewMatrix = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "View");
+    glProgramUniformMatrix4fv(shaderProgram, viewMatrix, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+
+    // define values in shader
+    GLuint AmbientLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "aLight.color");
+    GLuint AmbientLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "aLight.power");
+    GLuint AmbientLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "aLight.state");
+
+    // Send Ambient Light Data
+    glProgramUniform3fv(shaderProgram, AmbientLight_Color, 1, glm::value_ptr(ambientLight->color));
+    glProgramUniform1f(shaderProgram, AmbientLight_Power, ambientLight->power);
+    glProgramUniform1i(shaderProgram, AmbientLight_Active, ambientLight->active);
+
+    GLuint DirectionalLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "dLight.color");
+    GLuint DirectionalLight_Orientation = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "dLight.orientation");
+    GLuint DirectionalLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "dLight.power");
+    GLuint DirectionalLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "dLight.state");
+
+    glProgramUniform3fv(shaderProgram, DirectionalLight_Color, 1, glm::value_ptr(directionalLight->color));
+    glProgramUniform3fv(shaderProgram, DirectionalLight_Orientation, 1, glm::value_ptr(directionalLight->orientation));
+    glProgramUniform1f(shaderProgram, DirectionalLight_Power, directionalLight->power);
+    glProgramUniform1i(shaderProgram, DirectionalLight_Active, directionalLight->active);
+
+    // GLuint PointLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "pLight.color");
+    // GLuint PointLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "pLight.power");
+    // GLuint PointLight_Position = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "pLight.position");
+    // GLuint PointLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "pLight.active");
+
+    // glProgramUniform3f(shaderProgram, PointLight_Color, pointLight->color.x, pointLight->color.y, pointLight->color.z);
+    // glProgramUniform3f(shaderProgram, PointLight_Power, pointLight->position.x, pointLight->position.y, pointLight->position.z);
+    // glProgramUniform1f(shaderProgram, PointLight_Position, pointLight->power);
+    // glProgramUniform1i(shaderProgram, PointLight_Active, (int)pointLight->active);
+
+    // GLuint SpotLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.color");
+    // GLuint SpotLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.power");
+    // GLuint SpotLight_Position = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.position");
+    // GLuint SpotLight_Direction = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.direction");
+    // GLuint SpotLight_CutoffAngle = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.cutoffAngle");
+    // GLuint SpotLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.active");
+
+    // glProgramUniform3f(shaderProgram, SpotLight_Color, spotLight->color.x, spotLight->color.y, spotLight->color.z);
+    // glProgramUniform3f(shaderProgram, SpotLight_Power, spotLight->position.x, spotLight->position.y, spotLight->position.z);
+    // glProgramUniform3f(shaderProgram, SpotLight_Position, spotLight->orientation.x, spotLight->orientation.y, spotLight->orientation.z);
+    // glProgramUniform1f(shaderProgram, SpotLight_Direction, spotLight->power);
+    // glProgramUniform1f(shaderProgram, SpotLight_CutoffAngle, spotLight->cutoffAngle);
+    // glProgramUniform1i(shaderProgram, SpotLight_Active, (int)spotLight->active);
 
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() * 3);
 }
@@ -119,13 +173,13 @@ void Model::SendModelData(void)
     GLint locationTexSampler = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "TexSampler");
     glProgramUniform1i(shaderProgram, locationTexSampler, 0);
 
-    GLint Ns = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Ns");
+    GLint Ns = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "material.Ns");
     glProgramUniform1f(shaderProgram, Ns, materials.at("Iron_Man").Ns);
-    GLint Ka = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Ka");
+    GLint Ka = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "material.Ka");
     glProgramUniform3f(shaderProgram, Ka, materials.at("Iron_Man").Ka.x, materials.at("Iron_Man").Ka.y, materials.at("Iron_Man").Ka.z);
-    GLint Kd = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Kd");
+    GLint Kd = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "material.Kd");
     glProgramUniform3f(shaderProgram, Kd, materials.at("Iron_Man").Kd.x, materials.at("Iron_Man").Kd.y, materials.at("Iron_Man").Kd.z);
-    GLint Ks = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "Ks");
+    GLint Ks = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "material.Ks");
     glProgramUniform3f(shaderProgram, Ks, materials.at("Iron_Man").Ks.x, materials.at("Iron_Man").Ks.y, materials.at("Iron_Man").Ks.z);
 
     glEnable(GL_DEPTH_TEST);
@@ -298,26 +352,4 @@ std::vector<std::string> Model::GetElementsOfLine(const std::string line, const 
     if (word.size() != 0)
         elements.push_back(word);
     return elements;
-}
-
-void Model::AddLight(Lights::Light* light)
-{
-    this->lights.push_back(light);
-    this->numLights = this->lights.size();
-}
-void Model::RemoveLight(int index)
-{
-    if (index < this->lights.size())
-    {
-        this->lights.erase(this->lights.begin() + index);
-    }
-    else
-    {
-        std::cout << "Index outside of range" << std::endl;
-    }
-}
-
-Light* Model::GetLight(int index)
-{
-    return lights.at(index);
 }

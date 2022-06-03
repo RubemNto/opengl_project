@@ -6,6 +6,9 @@ class Camera
 {
 private:
     glm::mat4 ViewProjection;
+    glm::mat4 View;
+    glm::mat4 Projection;
+
 public:
     glm::vec3 position;
     glm::vec3 orientation;
@@ -24,5 +27,7 @@ public:
         float farPlane);
     ~Camera();
     glm::mat4 GetViewProjectionMatrix();
+    glm::mat4 GetViewMatrix();
+    glm::mat4 GetProjectionMatrix();
     void UpdateCamera();
 };

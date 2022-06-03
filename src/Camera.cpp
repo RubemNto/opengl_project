@@ -1,6 +1,6 @@
 #include "../header/Camera.h"
 
-Camera::Camera(glm::vec3 position, glm::vec3 orientation,glm::vec3 target, float FOV, float aspectRatio, float nearPlane, float farPlane)
+Camera::Camera(glm::vec3 position, glm::vec3 orientation, glm::vec3 target, float FOV, float aspectRatio, float nearPlane, float farPlane)
 {
     this->position = position;
     this->orientation = orientation;
@@ -17,6 +17,15 @@ Camera::~Camera() {}
 glm::mat4 Camera::GetViewProjectionMatrix()
 {
     return ViewProjection;
+}
+
+glm::mat4 Camera::GetViewMatrix()
+{
+    return View;
+}
+glm::mat4 Camera::GetProjectionMatrix()
+{
+    return Projection;
 }
 
 void Camera::UpdateCamera()

@@ -45,33 +45,12 @@ int main()
 	glewExperimental = GL_TRUE;
 	glewInit();
 	model = Model("assets/iron_man/Iron_Man.obj");
-	model.AddLight(
-		new AmbientLight(
-			true,
-			1,
-			glm::vec3(1, 1, 1)));
-	model.AddLight(
-		new DirectionalLight(
-			glm::vec3(0.0f, 1.0f, 0.0f),
-			true,
-			1,
-			glm::vec3(1, 1, 1)));
-	model.AddLight(
-		new PointLight(
-			glm::vec3(-5, 1, -2.5),
-			true,
-			1,
-			glm::vec3(1.0f, 0.0f, 0.0f)));
-	model.AddLight(
-		new SpotLight(
-			glm::vec3(5, 1, 2.5),
-			glm::vec3(0, 1, 0),
-			glm::radians(60.0f),
-			true,
-			1,
-			glm::vec3(1, 1, 1)));
+	model.ambientLight = new AmbientLight(false, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.directionalLight = new DirectionalLight(glm::vec3(0.0f, 1.0f, 0.0f), false, 100.0f, glm::vec3(0.2, 0.2, 0.2));
+	model.pointLight = new PointLight(glm::vec3(1, 1, 0), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.pointLight = new PointLight(glm::vec3(1, 2, 1), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.spotLight = new SpotLight(glm::vec3(-1, 1, 0), glm::vec3(1, 0, 0), glm::radians(10.0f), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 
-	model.SetLightActive(true);
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -79,6 +58,7 @@ int main()
 		model.Draw(camera, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(-2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
+		model.directionalLight->orientation += glm::vec3(0, 10, 0);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -95,12 +75,11 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
 	camera.position += glm::vec3(0.0f, 0.0f, -yoffset);
 	camera.UpdateCamera();
-	// std::cout << camera.position.x << "," << camera.position.y << "," << camera.position.z << std::endl;
 }
 
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-	// pitch = -yoffset / HEIGHT * 360;
+	roll = yoffset / HEIGHT * 360;
 	yaw = xoffset / WIDTH * 360;
 }
 
@@ -116,70 +95,25 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 {
 	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
 	{
-		for (int i = 0; i < model.numLights; i++)
-		{
-			Light *light = model.GetLight(i);
-			if (light->type == LightType::DIRECTIONAL_LIGHT)
-			{
-				AmbientLight *dLight = (AmbientLight *)light;
-				std::cout << "Ambient Light Data" << std::endl;
-				std::cout << "\tLight Color:" << dLight->color.x << "," << dLight->color.y << "," << dLight->color.z << std::endl;
-				std::cout << "\tLight Power:" << dLight->power << std::endl;
-				std::cout << "\tLight State:" << dLight->active << std::endl;
-			}
-		}
+		std::cout << "Ambient Light State: " << std::endl;
+		model.ambientLight->active = !model.ambientLight->active;
+		std::cout << model.ambientLight->active << std::endl;
 	}
 
 	if (key == GLFW_KEY_2 && action == GLFW_PRESS)
 	{
-		for (int i = 0; i < model.numLights; i++)
-		{
-			Light *light = model.GetLight(i);
-			if (light->type == LightType::DIRECTIONAL_LIGHT)
-			{
-				DirectionalLight *dLight = (DirectionalLight *)light;
-				std::cout << "Directional Light Data" << std::endl;
-				std::cout << "\tLight Color:" << dLight->color.x << "," << dLight->color.y << "," << dLight->color.z << std::endl;
-				std::cout << "\tLight Power:" << dLight->power << std::endl;
-				std::cout << "\tLight State:" << dLight->active << std::endl;
-				std::cout << "\tLight Direction:" << dLight->orientation.x << "," << dLight->orientation.y << "," << dLight->orientation.z << std::endl;
-			}
-		}
+		std::cout << "Directional Light State: " << std::endl;
+		model.directionalLight->active = !model.directionalLight->active;
+		std::cout << model.directionalLight->active << std::endl;
 	}
 
 	if (key == GLFW_KEY_3 && action == GLFW_PRESS)
 	{
-		for (int i = 0; i < model.numLights; i++)
-		{
-			Light *light = model.GetLight(i);
-			if (light->type == LightType::POINT_LIGHT)
-			{
-				PointLight *pLight = (PointLight *)light;
-				std::cout << "Point Light Data" << std::endl;
-				std::cout << "\tLight Color:" << pLight->color.x << "," << pLight->color.y << "," << pLight->color.z << std::endl;
-				std::cout << "\tLight Power:" << pLight->power << std::endl;
-				std::cout << "\tLight State:" << pLight->active << std::endl;
-				std::cout << "\tLight Position:" << pLight->position.x << "," << pLight->position.y << "," << pLight->position.z << std::endl;
-			}
-		}
+		model.pointLight->active = !model.pointLight->active;
 	}
 
 	if (key == GLFW_KEY_4 && action == GLFW_PRESS)
 	{
-		for (int i = 0; i < model.numLights; i++)
-		{
-			Light *light = model.GetLight(i);
-			if (light->type == LightType::SPOT_LIGHT)
-			{
-				SpotLight *sLight = (SpotLight *)light;
-				std::cout << "Spot Light Data" << std::endl;
-				std::cout << "\tLight Color:" << sLight->color.x << "," << sLight->color.y << "," << sLight->color.z << std::endl;
-				std::cout << "\tLight Power:" << sLight->power << std::endl;
-				std::cout << "\tLight State:" << sLight->active << std::endl;
-				std::cout << "\tLight Position:" << sLight->position.x << "," << sLight->position.y << "," << sLight->position.z << std::endl;
-				std::cout << "\tLight Orientation:" << sLight->orientation.x << "," << sLight->orientation.y << "," << sLight->orientation.z << std::endl;
-				std::cout << "\tLight CutoffAngle:" << sLight->cutoffAngle << std::endl;
-			}
-		}
+		model.spotLight->active = !model.spotLight->active;
 	}
 }

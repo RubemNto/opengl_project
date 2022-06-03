@@ -12,6 +12,7 @@ using namespace std;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include <vector>
 #include <fstream>
 
@@ -37,7 +38,7 @@ namespace RenderEngine
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> textureCoordinates;
-        std::vector<Light*> lights;
+        // std::vector<Light*> lights;
 
         GLuint vertexArrayObject;
         GLuint vertexBufferObjects[3];
@@ -56,15 +57,15 @@ namespace RenderEngine
         std::vector<std::string> GetElementsOfLine(const std::string line, const char element);
 
     public:
-        int numLights;
+        AmbientLight *ambientLight;
+        DirectionalLight *directionalLight;
+        PointLight *pointLight;
+        SpotLight *spotLight;
         Model(const std::string obj_model_filepath);
         Model();
         ~Model();
         void PrintModelData();
         void SetLightActive(bool value);
-        void AddLight(Lights::Light* light);
-        void RemoveLight(int index);
-        Light* GetLight(int index);
         void Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float scale);
     };
 }
