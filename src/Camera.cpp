@@ -35,5 +35,7 @@ void Camera::UpdateCamera()
         target,
         orientation);
     glm::mat4 Projection = glm::perspective(FOV, aspectRatio, nearPlane, farPlane);
+    this->View = View;
+    this->Projection = Projection;
     ViewProjection = Projection * View;
 }

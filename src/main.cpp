@@ -45,20 +45,21 @@ int main()
 	glewExperimental = GL_TRUE;
 	glewInit();
 	model = Model("assets/iron_man/Iron_Man.obj");
-	model.ambientLight = new AmbientLight(false, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	model.directionalLight = new DirectionalLight(glm::vec3(0.0f, 1.0f, 0.0f), false, 100.0f, glm::vec3(0.2, 0.2, 0.2));
+	model.ambientLight = new AmbientLight(true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.directionalLight = new DirectionalLight(glm::vec3(1.0f, -1.0f, 0.0f), true, 1.0f, glm::vec3(0, 0,0));
 	model.pointLight = new PointLight(glm::vec3(1, 1, 0), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 	model.pointLight = new PointLight(glm::vec3(1, 2, 1), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 	model.spotLight = new SpotLight(glm::vec3(-1, 1, 0), glm::vec3(1, 0, 0), glm::radians(10.0f), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-
+	float lightDirAngle = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
+		model.directionalLight->orientation = glm::vec3(glm::cos(glm::radians(lightDirAngle)), glm::sin(glm::radians(lightDirAngle)), -1);
 		model.Draw(camera, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(-2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
-		model.directionalLight->orientation += glm::vec3(0, 10, 0);
+		lightDirAngle += 0.5f;
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -79,7 +80,7 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-	roll = yoffset / HEIGHT * 360;
+	// roll = yoffset / HEIGHT * 360;
 	yaw = xoffset / WIDTH * 360;
 }
 
