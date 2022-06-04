@@ -141,6 +141,7 @@ vec3 GetSpotLight(SpotLight spotLight,vec3 normal, vec3 fragPos, vec3 viewDir)
 
 void main()
 {
+
 	vec4 light = vec4(
 		GetAmbientLight(aLight)
 		+
@@ -151,4 +152,15 @@ void main()
 		GetSpotLight(sLight, vec3(projectionMatrix * viewMatrix * normalVector), vec3(viewMatrix*modelMatrix * fragmentPosition),viewDir)
 		,1);
 	FragColor = texture(texSampler,textureCoord) * light ;
+
+	// vec4 light = vec4(
+	// 	GetAmbientLight(aLight)
+	// 	+
+	// 	GetDirectionalLight(dLight,vec3(projectionMatrix * viewMatrix *  normalVector),viewDir)
+	// 	+
+	// 	GetPointLight(pLight, vec3(projectionMatrix * viewMatrix * normalVector), vec3(viewMatrix*modelMatrix * fragmentPosition),viewDir)
+	// 	+
+	// 	GetSpotLight(sLight, vec3(projectionMatrix * viewMatrix * normalVector), vec3(viewMatrix*modelMatrix * fragmentPosition),viewDir)
+	// 	,1);
+	// FragColor = texture(texSampler,textureCoord) * light ;
 }
