@@ -144,11 +144,11 @@ void main()
 	vec4 light = vec4(
 		GetAmbientLight(aLight)
 		+
-		GetDirectionalLight(dLight,vec3(projectionMatrix * viewMatrix *  normalVector),viewDir)
+		GetDirectionalLight(dLight,vec3(normalVector),viewDir)
 		+
-		GetPointLight(pLight, vec3(projectionMatrix * viewMatrix * normalVector), vec3(viewMatrix*modelMatrix * fragmentPosition),viewDir)
+		GetPointLight(pLight, vec3(normalVector), vec3(fragmentPosition),viewDir)
 		+
-		GetSpotLight(sLight, vec3(projectionMatrix * viewMatrix * normalVector), vec3(viewMatrix*modelMatrix * fragmentPosition),viewDir)
+		GetSpotLight(sLight, vec3(normalVector), vec3(fragmentPosition),viewDir)
 		,1);
 	FragColor = texture(texSampler,textureCoord) * light ;
 }

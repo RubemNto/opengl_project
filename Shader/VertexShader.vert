@@ -23,13 +23,14 @@ void main()
     if(deform)
     {
         gl_Position = projection * view * (model + mat4(sinTime+1)) * vec4(vertexPosition+vec3(0,sinTime,0), 1.0f);
+        fragmentPosition =  projection*view*(model + mat4(sinTime+1))*vec4(vertexPosition, 1.0f);
     }else
     {
         gl_Position = projection*view*model * vec4(vertexPosition, 1.0f);
+        fragmentPosition =  projection*view*model*vec4(vertexPosition, 1.0f);
     }
-    fragmentPosition = vec4(vertexPosition, 1.0f);
     textureCoord = vertexTexturePosition;
-    normalVector = vec4(vertexNormal,1.0f); 
+    normalVector =  projection*view*model*vec4(vertexNormal,1.0f); 
     modelMatrix = model;
     viewMatrix = view;
     projectionMatrix = projection;

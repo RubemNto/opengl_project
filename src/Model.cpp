@@ -41,12 +41,15 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
 
     glBindVertexArray(vertexArrayObject);
 
+    //set if player can deform to shader
     GLint canDeform = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "deform");
     glProgramUniform1f(shaderProgram, canDeform,deform);
-
+    
+    //set if player deform time scale to shader
     GLint sinTime = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sinTime");
     glProgramUniform1f(shaderProgram, sinTime, glm::sin(glfwGetTime()));
 
+    //set model view projection matrix to shader
     GLint model = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "model");
     glProgramUniformMatrix4fv(shaderProgram, model, 1, GL_FALSE, glm::value_ptr(Model));
     GLint view = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "view");
@@ -54,6 +57,7 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
     GLint projection = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "projection");
     glProgramUniformMatrix4fv(shaderProgram, projection, 1, GL_FALSE, glm::value_ptr(camera.GetProjectionMatrix()));
 
+    //set camera view direction to shader
     glm::mat4 inverseView = glm::inverse(camera.GetViewMatrix());
     glm::vec3 viewDirVector = glm::vec3(inverseView[2][0], inverseView[2][1], inverseView[2][2]);
     GLint viewDir = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "viewDir");
@@ -144,10 +148,11 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
 
 void Model::SendModelData(void)
 {
+    //define data array
     GLfloat vertices[this->vertices.size() * 3];
     GLfloat normals[this->normals.size() * 3];
     GLfloat textureCoordinates[this->textureCoordinates.size() * 2];
-
+    //add valeus to the array
     for (int i = 0; i < this->vertices.size(); i++)
     {
         vertices[i * 3] = this->vertices.at(i).x;
@@ -162,8 +167,11 @@ void Model::SendModelData(void)
         textureCoordinates[i * 2 + 1] = this->textureCoordinates.at(i).y;
     }
 
+    //generate VAO to object
     glGenVertexArrays(1, &vertexArrayObject);
+    //activate VAO
     glBindVertexArray(vertexArrayObject);
+    //generate VBOs and add storage to them
     glGenBuffers(3, vertexBufferObjects);
     for (int i = 0; i < 3; i++)
     {
@@ -182,6 +190,7 @@ void Model::SendModelData(void)
         }
     }
 
+    //read and generate Shader program
     ShaderInfo shaders[] = {
         {GL_VERTEX_SHADER, "Shader/VertexShader.vert"},
         {GL_FRAGMENT_SHADER, "Shader/FragmentShader.frag"},
@@ -191,26 +200,32 @@ void Model::SendModelData(void)
         exit(EXIT_FAILURE);
     glUseProgram(shaderProgram);
 
+    //Seperate VBOs data
+    //send vertices to shader
     GLint vertexPosition = glGetProgramResourceLocation(shaderProgram, GL_PROGRAM_INPUT, "vertexPosition");
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjects[0]);
     glVertexAttribPointer(vertexPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vertexPosition);
 
+    //send UVs to shader
     GLint vertexTexturePosition = glGetProgramResourceLocation(shaderProgram, GL_PROGRAM_INPUT, "vertexTexturePosition");
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjects[1]);
     glVertexAttribPointer(vertexTexturePosition, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vertexTexturePosition);
 
+    //send vertex normals to shader
     GLint vertexNormal = glGetProgramResourceLocation(shaderProgram, GL_PROGRAM_INPUT, "vertexNormal");
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObjects[2]);
     glVertexAttribPointer(vertexNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vertexNormal);
-
+    
+    //send texture to shader
     GLint locationTexSampler = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "texSampler");
     glProgramUniform1i(shaderProgram, locationTexSampler, 0);
 
+    //send material data to the shader
     GLint Ns = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "material.Ns");
     glProgramUniform1f(shaderProgram, Ns, materials.at("Iron_Man").Ns);
     GLint Ka = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "material.Ka");
@@ -220,6 +235,7 @@ void Model::SendModelData(void)
     GLint Ks = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "material.Ks");
     glProgramUniform3f(shaderProgram, Ks, materials.at("Iron_Man").Ks.x, materials.at("Iron_Man").Ks.y, materials.at("Iron_Man").Ks.z);
 
+    //enable to draw model with only front side and enable to depth test the drawing
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_FRONT);
@@ -257,9 +273,11 @@ void Model::LoadTexture(const std::string file_name)
 
 void Model::ReadModel(const std::string file_name)
 {
+    //home folder
     std::vector<std::string> folders = GetElementsOfLine(file_name, '/');
     std::string HomeFolder = folders.at(0) + "/" + folders.at(1) + "/";
-
+    
+    //teporary storage data
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> textureCoordinates;
@@ -267,7 +285,7 @@ void Model::ReadModel(const std::string file_name)
     std::ifstream file(file_name);
     if (file)
     {
-        std::string currentMaterial;
+        // std::string currentMaterial; in future use to make map of materials to read from and draw the vertices with their corresponding shading data
         std::string line;
         std::vector<std::string> elements;
         while (std::getline(file, line))
@@ -277,27 +295,27 @@ void Model::ReadModel(const std::string file_name)
             {
                 ReadMaterial(HomeFolder + elements.at(1));
             }
-            if (strcmp(elements.at(0).c_str(), "v") == 0)
+            if (strcmp(elements.at(0).c_str(), "v") == 0) // get vertices of model
             {
                 vertices.push_back(glm::vec3(
                     std::stof(elements.at(1)),
                     std::stof(elements.at(2)),
                     std::stof(elements.at(3))));
             }
-            if (strcmp(elements.at(0).c_str(), "vt") == 0)
+            if (strcmp(elements.at(0).c_str(), "vt") == 0)// get UVS of model
             {
                 textureCoordinates.push_back(glm::vec2(
                     std::stof(elements.at(1)),
                     std::stof(elements.at(2))));
             }
-            if (strcmp(elements.at(0).c_str(), "vn") == 0)
+            if (strcmp(elements.at(0).c_str(), "vn") == 0)// get normals of model
             {
                 normals.push_back(glm::vec3(
                     std::stof(elements.at(1)),
                     std::stof(elements.at(2)),
                     std::stof(elements.at(3))));
             }
-            if (strcmp(elements.at(0).c_str(), "f") == 0)
+            if (strcmp(elements.at(0).c_str(), "f") == 0)// define data to be drawn of the model
             {
                 for (int i = 1; i < elements.size(); i++)
                 {
@@ -376,7 +394,7 @@ std::vector<std::string> Model::GetElementsOfLine(const std::string line, const 
     for (int i = 0; i < line.size(); i++)
     {
         char l = line.at(i);
-        if (l != element && l != '\n')
+        if (l != element && l != '\n')// check if at end of line or if found seperation element
         {
             word.push_back(l);
         }
