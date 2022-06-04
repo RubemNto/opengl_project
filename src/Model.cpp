@@ -118,7 +118,7 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
     GLuint SpotLight_CutoffAngle = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.cutoffAngle");
 
     GLuint SpotLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.power");
-    GLuint SpotLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.active");
+    GLuint SpotLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.state");
 
     GLuint SpotLight_Constant = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.constant");
     GLuint SpotLight_Linear = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.linear");
@@ -130,7 +130,7 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
 
     glProgramUniform3fv(shaderProgram, SpotLight_Position, 1, glm::value_ptr(spotLight->position));
     glProgramUniform3fv(shaderProgram, SpotLight_Direction, 1, glm::value_ptr(spotLight->orientation));
-    glProgramUniform1i(shaderProgram, SpotLight_CutoffAngle, glm::cos(spotLight->cutoffAngle));
+    glProgramUniform1f(shaderProgram, SpotLight_CutoffAngle, glm::cos(spotLight->cutoffAngle));
 
     glProgramUniform1f(shaderProgram, SpotLight_Power, spotLight->power);
     glProgramUniform1i(shaderProgram, SpotLight_Active, spotLight->active);
@@ -275,7 +275,6 @@ void Model::ReadModel(const std::string file_name)
             elements = GetElementsOfLine(line, ' ');
             if (strcmp(elements.at(0).c_str(), "mtllib") == 0)
             {
-                elements.at(1).pop_back();
                 ReadMaterial(HomeFolder + elements.at(1));
             }
             if (strcmp(elements.at(0).c_str(), "v") == 0)
