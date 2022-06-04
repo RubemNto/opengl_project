@@ -46,16 +46,16 @@ int main()
 	glewInit();
 	model = Model("assets/iron_man/Iron_Man.obj");
 	model.ambientLight = new AmbientLight(true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	model.directionalLight = new DirectionalLight(glm::vec3(1.0f, -1.0f, 0.0f), true, 1.0f, glm::vec3(0, 0,0));
-	model.pointLight = new PointLight(glm::vec3(1, 1, 0), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	model.pointLight = new PointLight(glm::vec3(1, 2, 1), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	model.spotLight = new SpotLight(glm::vec3(-1, 1, 0), glm::vec3(1, 0, 0), glm::radians(10.0f), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.directionalLight = new DirectionalLight(glm::vec3(1.0f, -1.0f, 0.0f), true, 1.0f, glm::vec3(0, 0, 0));
+	model.pointLight = new PointLight(glm::vec3(0, 2, 2.5f), true, 10.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.spotLight = new SpotLight(glm::vec3(0, 1, 0), glm::vec3(0, -1, 0), glm::radians(10.0f), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 	float lightDirAngle = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		model.directionalLight->orientation = glm::vec3(glm::cos(glm::radians(lightDirAngle)), glm::sin(glm::radians(lightDirAngle)), -1);
+		model.pointLight->position = glm::vec3(glm::cos(glm::radians(lightDirAngle)), 0.0f ,glm::sin(glm::radians(lightDirAngle))) * 5.0f;
 		model.Draw(camera, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(-2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
@@ -110,7 +110,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_3 && action == GLFW_PRESS)
 	{
+		std::cout << "Point Light State: " << std::endl;
 		model.pointLight->active = !model.pointLight->active;
+		std::cout << model.pointLight->active << std::endl;
 	}
 
 	if (key == GLFW_KEY_4 && action == GLFW_PRESS)

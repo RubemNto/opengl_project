@@ -10,6 +10,7 @@ uniform mat4 projection;
 
 out vec2 textureCoord;
 out vec4 normalVector;
+out vec4 fragmentPosition;
 out mat4 modelMatrix;
 out mat4 viewMatrix;
 out mat4 projectionMatrix;
@@ -17,6 +18,7 @@ out mat4 projectionMatrix;
 void main()
 {
     gl_Position = projection*view*model * vec4(vertexPosition, 1.0f);
+    fragmentPosition = vec4(vertexPosition, 1.0f);
     textureCoord = vertexTexturePosition;
     normalVector = vec4(vertexNormal,1.0f); 
     modelMatrix = model;
