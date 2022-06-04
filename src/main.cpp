@@ -45,21 +45,24 @@ int main()
 	glewExperimental = GL_TRUE;
 	glewInit();
 	model = Model("assets/iron_man/Iron_Man.obj");
-	model.ambientLight = new AmbientLight(true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	model.directionalLight = new DirectionalLight(glm::vec3(1.0f, -1.0f, 0.0f), true, 1.0f, glm::vec3(0, 0, 0));
-	model.pointLight = new PointLight(glm::vec3(0, 2, 2.5f), true, 10.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	model.spotLight = new SpotLight(glm::vec3(0, 1, 0), glm::vec3(0, -1, 0), glm::radians(10.0f), true, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.ambientLight = new AmbientLight(false, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.directionalLight = new DirectionalLight(glm::vec3(0.0f, -1.0f, 0.0f), false, 1.0f, glm::vec3(0, 0, 0));
+	model.pointLight = new PointLight(glm::vec3(0, 2, 2.5f), false, 10.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	model.spotLight = new SpotLight(camera.position, camera.orientation, glm::radians(60.0f), false, 10.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 	float lightDirAngle = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		model.directionalLight->orientation = glm::vec3(glm::cos(glm::radians(lightDirAngle)), glm::sin(glm::radians(lightDirAngle)), -1);
-		model.pointLight->position = glm::vec3(glm::cos(glm::radians(lightDirAngle)), 0.0f ,glm::sin(glm::radians(lightDirAngle))) * 5.0f;
+		model.directionalLight->orientation = glm::vec3(glm::cos(glm::radians(lightDirAngle)), 1, glm::sin(glm::radians(lightDirAngle)));
+		model.pointLight->position = glm::vec3(glm::sin(glm::radians(lightDirAngle)), 0.0f, glm::sin(glm::radians(lightDirAngle))) * 5.0f;
+		model.spotLight->orientation = glm::vec3(glm::cos(glm::radians(lightDirAngle)), glm::sin(glm::radians(lightDirAngle)), -1);
 		model.Draw(camera, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(-2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
 		model.Draw(camera, glm::vec3(2.0f, -1.0f, -5.0f), glm::vec3(pitch, yaw, roll), 1.0f);
-		lightDirAngle += 0.5f;
+
+		lightDirAngle += 1.0f;
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -80,7 +83,6 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 
 void cursorPositionCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
-	// roll = yoffset / HEIGHT * 360;
 	yaw = xoffset / WIDTH * 360;
 }
 
@@ -117,6 +119,15 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_4 && action == GLFW_PRESS)
 	{
+		std::cout << "Spot Light State: " << std::endl;
 		model.spotLight->active = !model.spotLight->active;
+		std::cout << model.spotLight->active << std::endl;
+	}
+
+	if (key == GLFW_KEY_5 && action == GLFW_PRESS)
+	{
+		std::cout << "Deform State: " << std::endl;
+		model.deform = !model.deform;
+		std::cout << model.deform << std::endl;
 	}
 }

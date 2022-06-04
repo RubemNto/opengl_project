@@ -61,6 +61,7 @@ namespace RenderEngine
         DirectionalLight *directionalLight;
         PointLight *pointLight;
         SpotLight *spotLight;
+        bool deform;
         Model(const std::string obj_model_filepath);
         Model();
         ~Model();

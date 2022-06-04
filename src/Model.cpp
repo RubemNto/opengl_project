@@ -8,6 +8,7 @@ Model::Model() {}
 Model::Model(const std::string obj_model_filepath)
 {
     lightEnabled = false;
+    deform = false;
     ReadModel(obj_model_filepath);
     SendModelData();
 }
@@ -40,6 +41,12 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
 
     glBindVertexArray(vertexArrayObject);
 
+    GLint canDeform = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "deform");
+    glProgramUniform1f(shaderProgram, canDeform,deform);
+
+    GLint sinTime = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sinTime");
+    glProgramUniform1f(shaderProgram, sinTime, glm::sin(glfwGetTime()));
+
     GLint model = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "model");
     glProgramUniformMatrix4fv(shaderProgram, model, 1, GL_FALSE, glm::value_ptr(Model));
     GLint view = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "view");
@@ -57,11 +64,12 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
     GLuint AmbientLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "aLight.power");
     GLuint AmbientLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "aLight.state");
 
-    // Send Ambient Light Data
+    // send shader info DirectionalLight
     glProgramUniform3fv(shaderProgram, AmbientLight_Color, 1, glm::value_ptr(ambientLight->color));
     glProgramUniform1f(shaderProgram, AmbientLight_Power, ambientLight->power);
     glProgramUniform1i(shaderProgram, AmbientLight_Active, ambientLight->active);
 
+    // send shader info DirectionalLight
     GLuint DirectionalLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "dLight.ambient");
     GLuint DirectionalLight_Diffuse = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "dLight.diffuse");
     GLuint DirectionalLight_Specular = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "dLight.specular");
@@ -76,6 +84,7 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
     glProgramUniform1f(shaderProgram, DirectionalLight_Power, directionalLight->power);
     glProgramUniform1i(shaderProgram, DirectionalLight_Active, directionalLight->active);
 
+    // send shader info PointLight
     GLuint PointLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "pLight.ambient");
     GLuint PointLight_Diffuse = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "pLight.diffuse");
     GLuint PointLight_Specular = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "pLight.specular");
@@ -99,26 +108,36 @@ void Model::Draw(Camera camera, glm::vec3 position, glm::vec3 orientation, float
     glProgramUniform1f(shaderProgram, PointLight_Linear, 0.7f);
     glProgramUniform1f(shaderProgram, PointLight_Quadratic, 0.4f);
 
-    // GLuint SpotLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.ambient");
-    // GLuint SpotLight_Diffuse = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.diffuse");
-    // GLuint SpotLight_Specular = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.specular");
+    // send shader info SpotLight
+    GLuint SpotLight_Color = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.ambient");
+    GLuint SpotLight_Diffuse = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.diffuse");
+    GLuint SpotLight_Specular = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.specular");
 
-    // GLuint SpotLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.power");
-    // GLuint SpotLight_Position = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.position");
-    // GLuint SpotLight_Direction = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.orientation");
-    // GLuint SpotLight_CutoffAngle = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.cutoffAngle");
-    // GLuint SpotLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.active");
+    GLuint SpotLight_Position = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.position");
+    GLuint SpotLight_Direction = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.orientation");
+    GLuint SpotLight_CutoffAngle = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.cutoffAngle");
 
-    // glProgramUniform3fv(shaderProgram, SpotLight_Color, 1, glm::value_ptr(spotLight->color));
-    // glProgramUniform3fv(shaderProgram, SpotLight_Diffuse, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
-    // glProgramUniform3fv(shaderProgram, SpotLight_Specular, 1,glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+    GLuint SpotLight_Power = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.power");
+    GLuint SpotLight_Active = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.active");
 
-    // glProgramUniform3fv(shaderProgram, SpotLight_Position, 1, glm::value_ptr(spotLight->position));
-    // glProgramUniform3fv(shaderProgram, SpotLight_Direction, 1, glm::value_ptr(spotLight->orientation));
+    GLuint SpotLight_Constant = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.constant");
+    GLuint SpotLight_Linear = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.linear");
+    GLuint SpotLight_Quadratic = glGetProgramResourceLocation(shaderProgram, GL_UNIFORM, "sLight.quadratic");
 
-    // glProgramUniform3f(shaderProgram, PointLight_Power, pointLight->position.x, pointLight->position.y, pointLight->position.z);
-    // glProgramUniform1f(shaderProgram, PointLight_Position, pointLight->power);
-    // glProgramUniform1i(shaderProgram, PointLight_Active, pointLight->active);
+    glProgramUniform3fv(shaderProgram, SpotLight_Color, 1, glm::value_ptr(spotLight->color));
+    glProgramUniform3fv(shaderProgram, SpotLight_Diffuse, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+    glProgramUniform3fv(shaderProgram, SpotLight_Specular, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.0f)));
+
+    glProgramUniform3fv(shaderProgram, SpotLight_Position, 1, glm::value_ptr(spotLight->position));
+    glProgramUniform3fv(shaderProgram, SpotLight_Direction, 1, glm::value_ptr(spotLight->orientation));
+    glProgramUniform1i(shaderProgram, SpotLight_CutoffAngle, glm::cos(spotLight->cutoffAngle));
+
+    glProgramUniform1f(shaderProgram, SpotLight_Power, spotLight->power);
+    glProgramUniform1i(shaderProgram, SpotLight_Active, spotLight->active);
+
+    glProgramUniform1f(shaderProgram, SpotLight_Constant, 1.0f);
+    glProgramUniform1f(shaderProgram, SpotLight_Linear, 0.7f);
+    glProgramUniform1f(shaderProgram, SpotLight_Quadratic, 0.4f);
 
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() * 3);
 }

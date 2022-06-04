@@ -41,6 +41,10 @@ struct SpotLight{
 	vec3 orientation;
 	float cutoffAngle;
 
+	float constant;
+    float linear;
+    float quadratic;
+
 	float power;
 	int state;
 };
@@ -93,6 +97,7 @@ vec3 GetDirectionalLight(DirectionalLight dirLight,vec3 normal, vec3 viewDir)
 
 vec3 GetPointLight(PointLight pointLight,vec3 normal, vec3 fragPos, vec3 viewDir)
 {
+	normal = normalize(normal);
 	vec3 lightDir = normalize(pointLight.position - vec3(fragPos));
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 reflectDir = reflect(-lightDir, normal);
@@ -107,6 +112,33 @@ vec3 GetPointLight(PointLight pointLight,vec3 normal, vec3 fragPos, vec3 viewDir
     return (ambient + diffuse + specular) * attenuation * pointLight.power * pointLight.state;
 }
 
+vec3 GetSpotLight(SpotLight spotLight,vec3 normal, vec3 fragPos, vec3 viewDir)
+{
+	vec3 lightDir = normalize(spotLight.position - vec3(fragPos));
+	float circleInnerAngle = dot(lightDir,normalize(-spotLight.orientation));
+
+	if(circleInnerAngle < spotLight.cutoffAngle)
+	{
+		PointLight pointLight;
+		pointLight.ambient = spotLight.ambient;
+		pointLight.diffuse = spotLight.diffuse;
+		pointLight.specular = spotLight.specular;
+
+		pointLight.constant = spotLight.constant;
+		pointLight.linear = spotLight.linear;
+		pointLight.quadratic = spotLight.quadratic;
+
+		pointLight.power = spotLight.power;
+		pointLight.state = spotLight.state;
+		
+		return GetPointLight(pointLight,normal,fragPos,viewDir);
+	}
+	else
+	{
+		return spotLight.ambient * spotLight.power/10.0f * spotLight.state;
+	}
+}
+
 void main()
 {
 	vec4 light = vec4(
@@ -115,6 +147,8 @@ void main()
 		GetDirectionalLight(dLight,vec3(projectionMatrix * viewMatrix *  normalVector),viewDir)
 		+
 		GetPointLight(pLight, vec3(projectionMatrix * viewMatrix * normalVector), vec3(viewMatrix*modelMatrix * fragmentPosition),viewDir)
+		+
+		GetSpotLight(sLight, vec3(projectionMatrix * viewMatrix * normalVector), vec3(viewMatrix*modelMatrix * fragmentPosition),viewDir)
 		,1);
 	FragColor = texture(texSampler,textureCoord) * light ;
 }
