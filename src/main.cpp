@@ -92,6 +92,8 @@ void windowSizeCallback(GLFWwindow *window, int xoffset, int yoffset)
 	HEIGHT = yoffset;
 	ASPECT_RATIO = WIDTH / HEIGHT;
 	glViewport(0, 0, WIDTH, HEIGHT);
+	camera.aspectRatio = ASPECT_RATIO;
+	camera.UpdateCamera();
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
